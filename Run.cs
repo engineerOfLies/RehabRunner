@@ -11,9 +11,11 @@ public class Run : MonoBehaviour {
     float speedMod;
     Vector3 zVec, xVec, targVec;
 
-    [Range(1,3)]
-    public int speed;
-    public float thrust, lrSpeed;
+    [Range(0,3)]
+    public float speed;
+    public float thrust;
+    [Range(0,5)]
+    public float strafeSpeed;
 
     public string left, right;
 
@@ -30,7 +32,7 @@ public class Run : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        speedMod = (Time.deltaTime / 100000) + 1;
+        //speedMod = (Time.deltaTime / 100000) + 1; //Too fast, change before reimplementing
 
         //Constantly moves the player forward, slowly increasing speed over time
         zVec.z = (speed + speedMod);
@@ -46,8 +48,9 @@ public class Run : MonoBehaviour {
 
 
         //Moves the player position to the target position
-        player.transform.position = Vector3.MoveTowards(player.transform.position, targVec, 2.5f);
+        player.transform.position = Vector3.MoveTowards(player.transform.position, targVec, strafeSpeed);
 
+        //Allows the player to jump if theyre colliding with a gameObject with the tag "floor"
         if (Input.GetAxis("Jump")!= 0 && grounded)
         {
             pBody.velocity = (transform.up * thrust);
