@@ -7,10 +7,11 @@ public class BuildingBuilder : MonoBehaviour
 {
 
 
-    [SerializeField]
+    //[SerializeField]
     public int minLanes, minLength;
     public float laneGainRate, obSpawnRate;
     public GameObject[] obstaclePrefabs;
+    public int[] availableObs;  //Set in Editor before running
 
     private int buildingNumber = 0;
     private int laneWidth = 50;
@@ -19,7 +20,7 @@ public class BuildingBuilder : MonoBehaviour
     private Building currentBuilding, lastBuilding, nextBuilding;
     private GameObject helloBuilding;
 
-    private int zStartDelay = 300;
+    private int zStartDelay = 250;
     private float xFloorScale = 5, zfloorScale = 15;
 
     private float zOffset, xOffset;
@@ -50,17 +51,19 @@ public class BuildingBuilder : MonoBehaviour
         test.lanes = 6;
         test.length = 3;
 
-            helloBuilding = PlaceObstacles(test, obstaclePrefabs);
-
+            helloBuilding = PlaceObstacles(test, obstaclePrefabs, 0f);
+            
+            //nextBuilding = Construct();
             //Instantiate(helloBuilding);
 
-        }
+    }
 
         // Update is called once per frame
         void Update()
         {
-            //Cleaning
-
+        //Cleaning
+        Debug.Log(buildingNumber);
+        
         }
 
         //Method for randomly generating a building
@@ -74,7 +77,14 @@ public class BuildingBuilder : MonoBehaviour
 
             nextBuilding.floor = new int[nextBuilding.lanes, nextBuilding.length];
 
-
+            for (int i = 0; i < nextBuilding.lanes; i++)
+            {
+                for (int j = 0; j < nextBuilding.length; j++)
+                {
+                    nextBuilding.floor[i, j] = availableObs[Random.Range(0, availableObs.Length)];
+                }
+            }
+            
             //If lanes are an even number, offset x position in Unity by 25
 
             buildingNumber = nextBuilding.number;
@@ -84,7 +94,7 @@ public class BuildingBuilder : MonoBehaviour
 
         private Vector3 ObsPos(int x, int z, Building plan) //Obstacle position
         {
-            int offZ,newZ, newX;
+            float offZ,newZ, newX;
             //int newY = 1;
             Vector3 vec3 = new Vector3();
 
@@ -109,23 +119,26 @@ public class BuildingBuilder : MonoBehaviour
             return vec3;
         }
 
-        public GameObject PlaceObstacles(Building build, GameObject[] obstaclePrefabs)
+        public GameObject PlaceObstacles(Building build, GameObject[] obstaclePrefabs, float zStartPos)
         {
             GameObject building = new GameObject();
+            building.tag = "Building";
             //GameObject floor = new GameObject();
             GameObject floor = Instantiate(obstaclePrefabs[0], building.transform);
             floor.transform.localScale = new Vector3((build.lanes*xFloorScale), 1, (build.length*zfloorScale));
             floor.transform.position += new Vector3(0, 0, (build.length * (nodeLength/2)));
             
             //Offsets the floor if even lanes
-            int offX;
+            float offX;
             if ((build.lanes % 2) == 0)
                 offX = -xOffset;
             else
                 offX = 0;
-            
 
-            building.transform.position = new Vector3(offX, 0, 0);
+            if (build.number == 0)
+                building.transform.position = new Vector3(offX, 0, 0);         
+            else          
+                building.transform.position = new Vector3(offX, 0, zStartPos);        
 
             for (int x = 0; x < build.lanes; x++)
             {
