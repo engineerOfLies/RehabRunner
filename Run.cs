@@ -19,13 +19,16 @@ public class Run : MonoBehaviour {
 
     public string left, right;
 
+    [SerializeField]
+    private float strafeDistance = 50;
+
     bool grounded;
 
 	// Use this for initialization
 	void Start ()
     {
         
-        xVec.Set(50, 0, 0);
+        xVec.Set(strafeDistance, 0, 0);
         zVec = Vector3.zero;
     }
 	
