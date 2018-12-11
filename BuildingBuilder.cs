@@ -14,14 +14,14 @@ public class BuildingBuilder : MonoBehaviour
     public int[] availableObs;  //Set in Editor before running
 
     private int buildingNumber = 0;
-    private int laneWidth = 50;
+    private int laneWidth = 20;
     private int nodeLength = 150;
 
     private Building currentBuilding, lastBuilding, nextBuilding;
     private GameObject helloBuilding;
 
     private int zStartDelay = 250;
-    private float xFloorScale = 5, zfloorScale = 15;
+    private float xFloorScale, zfloorScale;
 
     private float zOffset, xOffset;
 
@@ -38,12 +38,15 @@ public class BuildingBuilder : MonoBehaviour
         xOffset = laneWidth / 2;
         zOffset = nodeLength / 2;
 
-        //nextBuilding = Construct();
+        xFloorScale = laneWidth / 10;
+        zfloorScale = nodeLength / 10;
+
+        //Creates a specific building for test purposes
         Building test;
         int[,] ma = {                                   { 3, 3, 3 }, //x = 0
                                                         { 3, 3, 3 }, //x = 1
                                                         { 3, 3, 3 }, //x = 2
-                                        /*-->>*/        { 3, 3, 3 },
+                                        /*-->>*/        { 0, 3, 3 },
                                                         { 3, 3, 3 },
                                                         { 3, 3, 3 }           };
         test.floor = ma;                                                
@@ -62,6 +65,7 @@ public class BuildingBuilder : MonoBehaviour
         void Update()
         {
         //Cleaning
+
         Debug.Log(buildingNumber);
         
         }
@@ -85,7 +89,7 @@ public class BuildingBuilder : MonoBehaviour
                 }
             }
             
-            //If lanes are an even number, offset x position in Unity by 25
+            
 
             buildingNumber = nextBuilding.number;
             buildingNumber++;
@@ -98,15 +102,9 @@ public class BuildingBuilder : MonoBehaviour
             //int newY = 1;
             Vector3 vec3 = new Vector3();
 
-            //Sets the X offset to 25 if the number of lanes in the building is an even number
-            /*
-            if ((plan.lanes % 2) == 0)
-                offX = 25;
-            else
-                offX = 0;
-            */
+           
 
-            //Does the same for the Z offset with building length (number of rows)
+            //Changes the Z offset based off the building length (number of rows)
             if ((plan.length % 2) == 0)
                 offZ = zOffset;
             else
@@ -123,7 +121,7 @@ public class BuildingBuilder : MonoBehaviour
         {
             GameObject building = new GameObject();
             building.tag = "Building";
-            //GameObject floor = new GameObject();
+            
             GameObject floor = Instantiate(obstaclePrefabs[0], building.transform);
             floor.transform.localScale = new Vector3((build.lanes*xFloorScale), 1, (build.length*zfloorScale));
             floor.transform.position += new Vector3(0, 0, (build.length * (nodeLength/2)));
