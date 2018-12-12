@@ -22,7 +22,9 @@ public class Run : MonoBehaviour {
     [SerializeField]
     private float strafeDistance = 50;
 
-    bool grounded;
+    bool grounded, climbing = false;
+
+    private GameObject[] buildings;
 
 	// Use this for initialization
 	void Start ()
@@ -30,6 +32,8 @@ public class Run : MonoBehaviour {
         
         xVec.Set(strafeDistance, 0, 0);
         zVec = Vector3.zero;
+
+        
     }
 	
 	// Update is called once per frame
@@ -39,8 +43,23 @@ public class Run : MonoBehaviour {
 
         //Constantly moves the player forward, slowly increasing speed over time
         zVec.z = (speed + speedMod);
-        targVec += zVec;
+        //targVec += zVec;
         targVec.y = player.transform.position.y; //Keeps the y value the players, allowing them to jump naturally still
+
+        if(climbing)
+        {
+            zVec.z = .1f;
+            player.transform.position -= zVec;
+            targVec.y += .3f;
+        }
+             
+
+        buildings = GameObject.FindGameObjectsWithTag("Building");
+
+        foreach (GameObject building in buildings)
+        {
+            building.transform.position -= zVec;
+        }
         
 
         //Adds horizontal commands to the target position if inputed
@@ -67,6 +86,16 @@ public class Run : MonoBehaviour {
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Floor")
+        {
             grounded = true;
+            climbing = false;
+        }
+        if (collision.gameObject.tag == "Facade")
+        {
+            //you fell
+            //do something with climbing back up, idk
+            climbing = true;
+            
+        }
     }
 }

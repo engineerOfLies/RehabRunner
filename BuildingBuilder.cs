@@ -7,7 +7,7 @@ public class BuildingBuilder : MonoBehaviour
 {
 
 
-    //[SerializeField]
+    
     public int minLanes, minLength;
     public float laneGainRate, obSpawnRate;
     public GameObject[] obstaclePrefabs;
@@ -21,7 +21,8 @@ public class BuildingBuilder : MonoBehaviour
     private GameObject helloBuilding;
 
     private int zStartDelay = 250;
-    private float xFloorScale, zfloorScale;
+    private float yBuildingScale = 150f;
+    private float xFloorScale, zFloorScale;
 
     private float zOffset, xOffset;
 
@@ -39,16 +40,16 @@ public class BuildingBuilder : MonoBehaviour
         zOffset = nodeLength / 2;
 
         xFloorScale = laneWidth / 10;
-        zfloorScale = nodeLength / 10;
+        zFloorScale = nodeLength / 10;
 
         //Creates a specific building for test purposes
         Building test;
-        int[,] ma = {                                   { 3, 3, 3 }, //x = 0
-                                                        { 3, 3, 3 }, //x = 1
-                                                        { 3, 3, 3 }, //x = 2
-                                        /*-->>*/        { 0, 3, 3 },
-                                                        { 3, 3, 3 },
-                                                        { 3, 3, 3 }           };
+        int[,] ma = {                                   { 0, 3, 3 }, //x = 0
+                                                        { 0, 0, 3 }, //x = 1
+                                                        { 3, 0, 3 }, //x = 2
+                                        /*-->>*/        { 0, 3, 0 },
+                                                        { 3, 3, 0 },
+                                                        { 3, 3, 0 }           };
         test.floor = ma;                                                
         test.number = 0;
         test.lanes = 6;
@@ -56,15 +57,13 @@ public class BuildingBuilder : MonoBehaviour
 
             helloBuilding = PlaceObstacles(test, obstaclePrefabs, 0f);
             
-            //nextBuilding = Construct();
-            //Instantiate(helloBuilding);
 
     }
 
         // Update is called once per frame
         void Update()
         {
-        //Cleaning
+        
 
         Debug.Log(buildingNumber);
         
@@ -99,7 +98,7 @@ public class BuildingBuilder : MonoBehaviour
         private Vector3 ObsPos(int x, int z, Building plan) //Obstacle position
         {
             float offZ,newZ, newX;
-            //int newY = 1;
+            
             Vector3 vec3 = new Vector3();
 
            
@@ -123,8 +122,13 @@ public class BuildingBuilder : MonoBehaviour
             building.tag = "Building";
             
             GameObject floor = Instantiate(obstaclePrefabs[0], building.transform);
-            floor.transform.localScale = new Vector3((build.lanes*xFloorScale), 1, (build.length*zfloorScale));
+            floor.transform.localScale = new Vector3((build.lanes*xFloorScale), 1, (build.length*zFloorScale));
             floor.transform.position += new Vector3(0, 0, (build.length * (nodeLength/2)));
+
+            GameObject facade = Instantiate(obstaclePrefabs[1], floor.transform.position, building.transform.rotation, building.transform);
+            facade.transform.localScale = new Vector3(build.lanes*xFloorScale, yBuildingScale, build.length*zFloorScale);
+            //GameObject cube = facade.transform.GetChild(0).gameObject;
+            BoxCollider boxCollider = facade.transform.GetChild(0).gameObject.AddComponent<BoxCollider>();
             
             //Offsets the floor if even lanes
             float offX;
