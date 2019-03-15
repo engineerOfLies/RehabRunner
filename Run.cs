@@ -9,7 +9,7 @@ public class Run : MonoBehaviour {
     public GameObject player;
     public Rigidbody pBody;
     float speedMod;
-    Vector3 zVec, xVec, targVec;
+    Vector3 zVec, xVec, targVec, vel3, velStep;
 
     [Range(0,3)]
     public float speed;
@@ -33,12 +33,18 @@ public class Run : MonoBehaviour {
         xVec.Set(strafeDistance, 0, 0);
         zVec = Vector3.zero;
 
+        velStep.Set(0, -.1f, 0);
         
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+        if (!grounded)
+        {
+            vel3 -= velStep;
+        }
+
         //speedMod = (Time.deltaTime / 100000) + 1; //Too fast, change before reimplementing
 
         //Constantly moves the player forward, slowly increasing speed over time
@@ -75,7 +81,10 @@ public class Run : MonoBehaviour {
         //Allows the player to jump if theyre colliding with a gameObject with the tag "floor"
         if (Input.GetAxis("Jump")!= 0 && grounded)
         {
-            pBody.velocity = (transform.up * thrust);
+            //vel3.Set(0, 2, 0);
+            player.transform.position += vel3;
+
+            // pBody.velocity = (transform.up * thrust);
             Debug.Log("Yump");
 
             grounded = false;
@@ -88,14 +97,31 @@ public class Run : MonoBehaviour {
         if (collision.gameObject.tag == "Floor")
         {
             grounded = true;
+            vel3.Set(0, 5, 0);
             climbing = false;
         }
+
         if (collision.gameObject.tag == "Facade")
         {
             //you fell
             //do something with climbing back up, idk
             climbing = true;
             
+        }
+        else if (collision.gameObject.tag == "Wall")
+        {
+            //the player hit a wall
+            //stop until they move back over
+        }
+        else if (collision.gameObject.tag == "Slide")
+        {
+            //the player hit an obstacle they had to slide under
+            //fall down under it and get up on the other side, slower
+        }
+        else
+        {
+            //stumble, be it a hurdle of half wall
+            //slow down a bit as you trip over obstacle
         }
     }
 }
