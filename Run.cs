@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Run : MonoBehaviour {
 
-    private const float QUICK_FALL = 15f;
+    private const float QUICK_FALL = 12f;
     
     public GameObject player;
     public Rigidbody pBody;
@@ -85,8 +85,8 @@ public class Run : MonoBehaviour {
         //Allows the player to jump if theyre colliding with a gameObject with the tag "floor"
         if (Input.GetAxis("Jump")!= 0 && grounded)
         {
-            pBody.constraints = RigidbodyConstraints.None;
-            pBody.constraints = RigidbodyConstraints.FreezeRotation;
+            //pBody.constraints = RigidbodyConstraints.None;
+            //pBody.constraints = RigidbodyConstraints.FreezeRotation;
             //vel3.Set(0, 2, 0);
             //player.transform.position += vel3;
 
@@ -103,8 +103,8 @@ public class Run : MonoBehaviour {
         if (collision.gameObject.tag == "Floor")
         {
             grounded = false;
-            pBody.constraints = RigidbodyConstraints.None;
-            pBody.constraints = RigidbodyConstraints.FreezeRotation;
+            //pBody.constraints = RigidbodyConstraints.None;
+            //pBody.constraints = RigidbodyConstraints.FreezeRotation;
         }
     }
     void OnCollisionEnter(Collision collision)
@@ -112,7 +112,7 @@ public class Run : MonoBehaviour {
         if (collision.gameObject.tag == "Floor")
         {
             grounded = true;
-            pBody.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;
+            //pBody.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;
             pBody.velocity = velZero;
             climbing = false;
         }
