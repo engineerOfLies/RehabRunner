@@ -22,7 +22,7 @@ public class BuildingBuilder : MonoBehaviour
     public int[] availableObs;  //Set in Editor before running
 
     private Building previousBuilding;
-    private GameObject b1, b2, b3;
+    private GameObject bild;
 
     [HideInInspector]
     public GameObject currentBuild, lastBuild, nextBuild;
@@ -64,19 +64,19 @@ public class BuildingBuilder : MonoBehaviour
         test.number = 0;
         test.lanes = 6;
         test.length = 3;
+        
+
+        bild = PlaceObstacles(test, obstaclePrefabs);
         buildingNumber++;
 
-        b1 = PlaceObstacles(test, obstaclePrefabs);
+        currentBuild = bild;
 
-        currentBuild = b1;
+        bild = PlaceObstacles(Construct(), obstaclePrefabs);
 
-        b2 = PlaceObstacles(Construct(), obstaclePrefabs);
-
-        nextBuild = b2;
+        nextBuild = bild;
 
         SpawnNewBuilding();
-
-        SpawnNewBuilding();
+       
     }
 
     // Update is called once per frame
@@ -134,9 +134,15 @@ public class BuildingBuilder : MonoBehaviour
             offZ = 0;
 
         newX = ((x * laneWidth) - ((int)(plan.lanes / 2) * laneWidth));
-        newZ = ((z * nodeLength + zStartDelay) - ((int)(plan.length / 2) * nodeLength + offZ));
+        newZ = ((z * nodeLength + zStartDelay) - (((int)(plan.length / 2) * nodeLength) + offZ));
         newZ += (newBuildPos.z + (buildingNumber)*(offZ));
+
+        if (buildingNumber >= 1 )
+        newZ += ((zOffset * plan.length) - (zOffset*3));
+
         vec3.Set(newX, 3, newZ);
+        //Rework for longevity 
+
 
         return vec3;
     }
@@ -216,9 +222,11 @@ public class BuildingBuilder : MonoBehaviour
 
     public void SpawnNewBuilding()
     {
+        Destroy(lastBuild.gameObject);
         lastBuild = currentBuild;
         currentBuild = nextBuild;
-        nextBuild = PlaceObstacles(Construct(), obstaclePrefabs);   
+        bild = PlaceObstacles(Construct(), obstaclePrefabs);
+        nextBuild = bild;
     }
 
 }

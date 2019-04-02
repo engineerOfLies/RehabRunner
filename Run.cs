@@ -5,11 +5,12 @@ using UnityEngine;
 
 public class Run : MonoBehaviour {
 
+    private const float QUICK_FALL = 15f;
     
     public GameObject player;
     public Rigidbody pBody;
     float speedMod;
-    Vector3 zVec, xVec, targVec, vel3, velStep;
+    Vector3 zVec, xVec, targVec, vel3, velStep, velZero;
 
     [Range(0,3)]
     public float speed;
@@ -34,6 +35,7 @@ public class Run : MonoBehaviour {
         zVec = Vector3.zero;
 
         velStep.Set(0, -.1f, 0);
+        velZero.Set(0, 0, 0);
         
     }
 	
@@ -42,7 +44,9 @@ public class Run : MonoBehaviour {
     {
         if (!grounded)
         {
-            vel3 -= velStep;
+            vel3 = pBody.velocity;
+            vel3.y -= QUICK_FALL * Time.deltaTime;
+            pBody.velocity = vel3;
         }
 
         //speedMod = (Time.deltaTime / 100000) + 1; //Too fast, change before reimplementing
@@ -81,10 +85,12 @@ public class Run : MonoBehaviour {
         //Allows the player to jump if theyre colliding with a gameObject with the tag "floor"
         if (Input.GetAxis("Jump")!= 0 && grounded)
         {
+            pBody.constraints = RigidbodyConstraints.None;
+            pBody.constraints = RigidbodyConstraints.FreezeRotation;
             //vel3.Set(0, 2, 0);
-            player.transform.position += vel3;
+            //player.transform.position += vel3;
 
-            // pBody.velocity = (transform.up * thrust);
+            pBody.velocity = (transform.up * thrust);
             Debug.Log("Yump");
 
             grounded = false;
@@ -92,12 +98,22 @@ public class Run : MonoBehaviour {
         
 	}
     
+    void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.tag == "Floor")
+        {
+            grounded = false;
+            pBody.constraints = RigidbodyConstraints.None;
+            pBody.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+    }
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Floor")
         {
             grounded = true;
-            vel3.Set(0, 5, 0);
+            pBody.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;
+            pBody.velocity = velZero;
             climbing = false;
         }
 
