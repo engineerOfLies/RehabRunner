@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class Run : MonoBehaviour {
 
-    private const float QUICK_FALL = 12f;
+    private const float QUICK_FALL = 18f;
     
     public GameObject player;
     public Rigidbody pBody;
-    float speedMod;
+    float speedMod, stumbleTimer;
     Vector3 zVec, xVec, targVec, vel3, velStep, velZero;
 
     [Range(0,3)]
@@ -21,7 +21,7 @@ public class Run : MonoBehaviour {
     public string left, right;
 
     [SerializeField]
-    private float strafeDistance = 50;
+    private float strafeDistance = 50f, stumbleTimerSet;
 
     bool grounded, climbing = false;
 
@@ -56,13 +56,21 @@ public class Run : MonoBehaviour {
         //targVec += zVec;
         targVec.y = player.transform.position.y; //Keeps the y value the players, allowing them to jump naturally still
 
-        if(climbing)
+        if (climbing)
         {
-            zVec.z = .1f;
+            zVec.z = 0f;
             player.transform.position -= zVec;
-            targVec.y += .3f;
+            targVec.y += .8f;
         }
-             
+        
+
+        Debug.Log(stumbleTimer);
+
+        if(stumbleTimer>0)
+        {
+            zVec.z = zVec.z * .5f;
+            stumbleTimer -= Time.deltaTime;
+        }
 
         buildings = GameObject.FindGameObjectsWithTag("Building");
 
@@ -97,6 +105,19 @@ public class Run : MonoBehaviour {
         }
         
 	}
+
+    void StopRunning()
+    {
+
+
+    }
+
+    //Player stumbles over an obstacle and slows down for a moment
+    void Stumble()
+    {
+        stumbleTimer = stumbleTimerSet;
+        //call stumble animation also
+    }
     
     void OnCollisionExit(Collision collision)
     {
@@ -106,6 +127,10 @@ public class Run : MonoBehaviour {
             //pBody.constraints = RigidbodyConstraints.None;
             //pBody.constraints = RigidbodyConstraints.FreezeRotation;
         }
+        if(collision.gameObject.tag == "Facade")
+        {
+            climbing = false;
+        }
     }
     void OnCollisionEnter(Collision collision)
     {
@@ -114,7 +139,7 @@ public class Run : MonoBehaviour {
             grounded = true;
             //pBody.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;
             pBody.velocity = velZero;
-            climbing = false;
+            //climbing = false;
         }
 
         if (collision.gameObject.tag == "Facade")
@@ -134,8 +159,9 @@ public class Run : MonoBehaviour {
             //the player hit an obstacle they had to slide under
             //fall down under it and get up on the other side, slower
         }
-        else
+        else if (collision.gameObject.tag == "HalfWall" || collision.gameObject.tag == "Hurdle")
         {
+            Stumble();
             //stumble, be it a hurdle of half wall
             //slow down a bit as you trip over obstacle
         }
