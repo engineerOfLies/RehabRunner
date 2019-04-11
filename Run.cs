@@ -42,7 +42,7 @@ public class Run : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        if (!grounded)
+        if (!grounded && !climbing)
         {
             vel3 = pBody.velocity;
             vel3.y -= QUICK_FALL * Time.deltaTime;
@@ -53,14 +53,14 @@ public class Run : MonoBehaviour {
 
         //Constantly moves the player forward, slowly increasing speed over time
         zVec.z = (speed + speedMod);
-        //targVec += zVec;
+        
         targVec.y = player.transform.position.y; //Keeps the y value the players, allowing them to jump naturally still
 
         if (climbing)
         {
             zVec.z = 0f;
             player.transform.position -= zVec;
-            targVec.y += .8f;
+            targVec.y += 1.8f;
         }
         
 
@@ -93,10 +93,7 @@ public class Run : MonoBehaviour {
         //Allows the player to jump if theyre colliding with a gameObject with the tag "floor"
         if (Input.GetAxis("Jump")!= 0 && grounded)
         {
-            //pBody.constraints = RigidbodyConstraints.None;
-            //pBody.constraints = RigidbodyConstraints.FreezeRotation;
-            //vel3.Set(0, 2, 0);
-            //player.transform.position += vel3;
+            
 
             pBody.velocity = (transform.up * thrust);
             Debug.Log("Yump");
@@ -124,8 +121,7 @@ public class Run : MonoBehaviour {
         if (collision.gameObject.tag == "Floor")
         {
             grounded = false;
-            //pBody.constraints = RigidbodyConstraints.None;
-            //pBody.constraints = RigidbodyConstraints.FreezeRotation;
+            
         }
         if(collision.gameObject.tag == "Facade")
         {
@@ -137,9 +133,7 @@ public class Run : MonoBehaviour {
         if (collision.gameObject.tag == "Floor")
         {
             grounded = true;
-            //pBody.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;
-            pBody.velocity = velZero;
-            //climbing = false;
+            
         }
 
         if (collision.gameObject.tag == "Facade")
