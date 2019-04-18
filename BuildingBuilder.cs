@@ -12,14 +12,19 @@ public class BuildingBuilder : MonoBehaviour
     public float laneGainRate, obSpawnRate;
 
     [SerializeField]
-    private int laneWidth = 20, nodeLength = 150;
+    private int laneWidth = 10, nodeLength = 150;
     [SerializeField]
     private float gapLength = 75f;
 
     private int buildingNumber = 0;
 
+    [SerializeField]
+    public GameObject plank;
+
     public GameObject[] obstaclePrefabs;
     public int[] availableObs;  //Set in Editor before running
+
+    
 
     private Building previousBuilding;
     private GameObject bild;
@@ -37,6 +42,7 @@ public class BuildingBuilder : MonoBehaviour
     public struct Building
     {
         public int[,] floor;
+        public int[] boards;
         public int number, lanes, length;
 
     };
@@ -54,16 +60,17 @@ public class BuildingBuilder : MonoBehaviour
 
         //Creates a specific building for test purposes
         Building test;
-        int[,] ma = {                                   { 0, 3, 3 }, //x = 0
-                                                        { 0, 0, 3 }, //x = 1
-                                                        { 3, 0, 4 }, //x = 2
-                                        /*-->>*/        { 0, 3, 0 },
-                                                        { 3, 3, 0 },
-                                                        { 3, 3, 0 }           };
+        int[,] ma = {                                   { 0, 2, 2 }, //x = 0
+                                                        { 0, 0, 2 }, //x = 1
+                                                        { 2, 0, 4 }, //x = 2
+                                        /*-->>*/                  };
         test.floor = ma;                                                
         test.number = 0;
-        test.lanes = 6;
+        test.lanes = 3;
         test.length = 3;
+
+        int[] bd = { 1, 1, 1 };
+        test.boards = bd;
         
 
         bild = PlaceObstacles(test, obstaclePrefabs);
@@ -84,7 +91,7 @@ public class BuildingBuilder : MonoBehaviour
     {
         
 
-    Debug.Log(buildingNumber);
+    //Debug.Log(buildingNumber);
         
     }
 
@@ -93,7 +100,7 @@ public class BuildingBuilder : MonoBehaviour
     {
         Building nextBuilding = new Building();
 
-        nextBuilding.lanes = minLanes + Random.Range(0, 4); //(int)(buildingNumber * laneGainRate));
+        nextBuilding.lanes = minLanes + Random.Range(0, 0); //(int)(buildingNumber * laneGainRate));
 
         nextBuilding.length = minLength + Random.Range(0, 4); //number is placeholder, add difficulty scaling to building length
 
@@ -106,8 +113,11 @@ public class BuildingBuilder : MonoBehaviour
                 nextBuilding.floor[i, j] = availableObs[Random.Range(0, availableObs.Length)];
             }
         }
-            
-            
+
+        nextBuilding.boards = new int[3];
+        nextBuilding.boards[0] = Random.Range(0, 2);
+        nextBuilding.boards[1] = Random.Range(0, 2);
+        nextBuilding.boards[2] = Random.Range(0, 2);
 
         nextBuilding.number = buildingNumber;
         buildingNumber++;
@@ -214,6 +224,19 @@ public class BuildingBuilder : MonoBehaviour
             }
         }
 
+        float plankX, plankZ;
+        Vector3 plankV = new Vector3();
+        //Spawn planks
+        for (int i = 0; i<3; i++)
+        {
+            if (build.boards[i] == 0) continue;
+
+            plankX = ((i * laneWidth) - ((int)(build.lanes / 2) * laneWidth));
+            plankZ = ((nodeLength * build.length) + 35);
+            plankV.Set(plankX, .1f, plankZ);
+            GameObject planks;
+            planks = Instantiate(plank, plankV, building.transform.rotation, building.transform);
+        }
 
         previousBuilding = build;
         return building;

@@ -9,7 +9,7 @@ public class Run : MonoBehaviour {
     
     public GameObject player;
     public Rigidbody pBody;
-    float speedMod, stumbleTimer;
+    float speedMod, stumbleTimer, slideTimer;
     Vector3 zVec, xVec, targVec, vel3, velStep, velZero;
 
     [Range(0,3)]
@@ -21,9 +21,9 @@ public class Run : MonoBehaviour {
     public string left, right;
 
     [SerializeField]
-    private float strafeDistance = 50f, stumbleTimerSet;
+    private float strafeDistance = 50f, stumbleTimerSet, slideTimerSet;
 
-    bool grounded, climbing = false;
+    bool grounded, climbing = false, sliding;
 
     private GameObject[] buildings;
 
@@ -64,12 +64,17 @@ public class Run : MonoBehaviour {
         }
         
 
-        Debug.Log(stumbleTimer);
+        //Debug.Log(stumbleTimer);
 
         if(stumbleTimer>0)
         {
             zVec.z = zVec.z * .5f;
             stumbleTimer -= Time.deltaTime;
+        }
+
+        if(slideTimer>0)
+        {
+            slideTimer -= Time.deltaTime;
         }
 
         buildings = GameObject.FindGameObjectsWithTag("Building");
@@ -94,11 +99,18 @@ public class Run : MonoBehaviour {
         if (Input.GetAxis("Jump")!= 0 && grounded)
         {
             
-
+            //play jump animation
             pBody.velocity = (transform.up * thrust);
             Debug.Log("Yump");
 
             grounded = false;
+        }
+
+        if (Input.GetAxis("Slide")!= 0 && !sliding)
+        {
+            //play slide animation
+            sliding = true;
+            slideTimer = slideTimerSet;
         }
         
 	}
@@ -150,14 +162,21 @@ public class Run : MonoBehaviour {
         }
         else if (collision.gameObject.tag == "Slide")
         {
+            if (!sliding) Stumble(); // Maybe make a different animation for this?
             //the player hit an obstacle they had to slide under
             //fall down under it and get up on the other side, slower
         }
-        else if (collision.gameObject.tag == "HalfWall" || collision.gameObject.tag == "Hurdle")
+        else if (collision.gameObject.tag == "HalfWall" )
         {
+
             Stumble();
             //stumble, be it a hurdle of half wall
             //slow down a bit as you trip over obstacle
+        }
+        else if (collision.gameObject.tag == "Hurdle")
+        {
+            if (!sliding) Stumble();
+            //the player stumbles if they aren't sliding
         }
     }
 }
