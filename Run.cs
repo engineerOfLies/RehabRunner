@@ -9,8 +9,9 @@ public class Run : MonoBehaviour {
     
     public GameObject player;
     public Rigidbody pBody;
-    float speedMod, stumbleTimer, slideTimer;
+    float speedMod, stumbleTimer, slideTimer, jumpTimer, pointsPerBar;
     Vector3 zVec, xVec, targVec, vel3, velStep, velZero;
+    double score = 0;
 
     [Range(0,3)]
     public float speed;
@@ -21,9 +22,9 @@ public class Run : MonoBehaviour {
     public string left, right;
 
     [SerializeField]
-    private float strafeDistance = 50f, stumbleTimerSet, slideTimerSet;
+    private float strafeDistance = 50f, stumbleTimerSet, slideTimerSet, jumpTimerSet;
 
-    bool grounded, climbing = false, sliding;
+    bool jumping = false, climbing = false, sliding;
 
     private GameObject[] buildings;
 
@@ -42,7 +43,7 @@ public class Run : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        if (!grounded && !climbing)
+        if (!climbing)
         {
             vel3 = pBody.velocity;
             vel3.y -= QUICK_FALL * Time.deltaTime;
@@ -54,13 +55,13 @@ public class Run : MonoBehaviour {
         //Constantly moves the player forward, slowly increasing speed over time
         zVec.z = (speed + speedMod);
         
-        targVec.y = player.transform.position.y; //Keeps the y value the players, allowing them to jump naturally still
+        targVec.y = player.transform.position.y; //Keeps the y value the players
 
         if (climbing)
         {
             zVec.z = 0f;
             player.transform.position -= zVec;
-            targVec.y += 1.8f;
+            targVec.y += 1.8f; // >:(
         }
         
 
@@ -77,6 +78,11 @@ public class Run : MonoBehaviour {
             slideTimer -= Time.deltaTime;
         }
 
+        if(jumpTimer>0)
+        {
+            jumpTimer -= Time.deltaTime;
+        }
+
         buildings = GameObject.FindGameObjectsWithTag("Building");
 
         foreach (GameObject building in buildings)
@@ -85,28 +91,31 @@ public class Run : MonoBehaviour {
         }
         
 
+
         //Adds horizontal commands to the target position if inputed
+        //CHANGE TO SET POSITIONS--LESS ROOM FOR ERROR
         if(Input.GetKeyDown(right))
             targVec += xVec;
         else if(Input.GetKeyDown(left))
             targVec -= xVec;
 
 
-        //Moves the player position to the target position
+        //Moves the player position to the target position (potentially change)
         player.transform.position = Vector3.MoveTowards(player.transform.position, targVec, strafeSpeed);
 
-        //Allows the player to jump if theyre colliding with a gameObject with the tag "floor"
-        if (Input.GetAxis("Jump")!= 0 && grounded)
+        //Allows the player to jump if jump is not on cooldown
+        if (Input.GetAxis("Jump")!= 0 && !jumping)
         {
             
             //play jump animation
-            pBody.velocity = (transform.up * thrust);
-            Debug.Log("Yump");
+            
+            //Debug.Log("Yump");
 
-            grounded = false;
+            jumping = true;
+            jumpTimer = jumpTimerSet; //tie to animation time
         }
 
-        if (Input.GetAxis("Slide")!= 0 && !sliding)
+        if (Input.GetAxis("Slide")!= 0 && !sliding && !jumping)
         {
             //play slide animation
             sliding = true;
@@ -126,15 +135,12 @@ public class Run : MonoBehaviour {
     {
         stumbleTimer = stumbleTimerSet;
         //call stumble animation also
+        //slow speed after?
     }
     
     void OnCollisionExit(Collision collision)
     {
-        if (collision.gameObject.tag == "Floor")
-        {
-            grounded = false;
-            
-        }
+
         if(collision.gameObject.tag == "Facade")
         {
             climbing = false;
@@ -142,41 +148,51 @@ public class Run : MonoBehaviour {
     }
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Floor")
-        {
-            grounded = true;
-            
-        }
 
         if (collision.gameObject.tag == "Facade")
         {
             //you fell
             //do something with climbing back up, idk
+            //CHANGE TO SET POSITIONS REEEE
             climbing = true;
-            
+
         }
         else if (collision.gameObject.tag == "Wall")
         {
             //the player hit a wall
             //stop until they move back over
         }
-        else if (collision.gameObject.tag == "Slide")
+        else;
+    }
+    void OnTriggerEnter(Collider collision)
+    {
+        if (collision.gameObject.tag == "Slide")
         {
             if (!sliding) Stumble(); // Maybe make a different animation for this?
+            else; //good job
             //the player hit an obstacle they had to slide under
             //fall down under it and get up on the other side, slower
         }
-        else if (collision.gameObject.tag == "HalfWall" )
+        else if (collision.gameObject.tag == "HalfWall")
         {
 
-            Stumble();
+            if (!jumping) Stumble();
+            else; //good job
             //stumble, be it a hurdle of half wall
             //slow down a bit as you trip over obstacle
         }
         else if (collision.gameObject.tag == "Hurdle")
         {
-            if (!sliding) Stumble();
-            //the player stumbles if they aren't sliding
+            if (!sliding && !jumping) Stumble(); //the player stumbles if they aren't sliding or jumping
+            else; //good job
+        }
+        else if (collision.gameObject.tag == "GoldBar")
+        {
+            //get points, add score, good jorb? GO FASTER??
+            score += pointsPerBar;
+            //def pickup noise, like uh... a 'brring' or somethin, yeah
+            //oh and kill the bar
+            Destroy(collision.gameObject);
         }
     }
 }
