@@ -19,12 +19,14 @@ public class Run : MonoBehaviour {
     [Range(0,5)]
     public float strafeSpeed;
 
-    public string left, right;
+    
+    string left = "a" , right = "d";
 
     [SerializeField]
     private float strafeDistance = 50f, stumbleTimerSet, slideTimerSet, jumpTimerSet;
 
     bool jumping = false, climbing = false, sliding;
+    bool leftLane = false, rightLane = false;
 
     private GameObject[] buildings;
 
@@ -45,9 +47,9 @@ public class Run : MonoBehaviour {
     {
         if (!climbing)
         {
-            vel3 = pBody.velocity;
-            vel3.y -= QUICK_FALL * Time.deltaTime;
-            pBody.velocity = vel3;
+            //vel3 = pBody.velocity;
+            //vel3.y -= QUICK_FALL * Time.deltaTime;
+            //pBody.velocity = vel3;
         }
 
         //speedMod = (Time.deltaTime / 100000) + 1; //Too fast, change before reimplementing
@@ -59,9 +61,9 @@ public class Run : MonoBehaviour {
 
         if (climbing)
         {
-            zVec.z = 0f;
-            player.transform.position -= zVec;
-            targVec.y += 1.8f; // >:(
+            //zVec.z = 0f;
+            //player.transform.position -= zVec;
+            //targVec.y += 1.8f; // >:(
         }
         
 
@@ -89,16 +91,23 @@ public class Run : MonoBehaviour {
         {
             building.transform.position -= zVec;
         }
-        
+
 
 
         //Adds horizontal commands to the target position if inputed
         //CHANGE TO SET POSITIONS--LESS ROOM FOR ERROR
-        if(Input.GetKeyDown(right))
+        if (Input.GetKeyDown(KeyCode.RightArrow) && !rightLane)
+        {
             targVec += xVec;
-        else if(Input.GetKeyDown(left))
+            if (leftLane) leftLane = false; //If the player is in the left lane, set left to false and dont change right
+            else rightLane = true; //Otherwise, the player must be entering the right lane
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow) && !leftLane)
+        {
             targVec -= xVec;
-
+            if (rightLane) rightLane = false; // vice versa
+            else leftLane = true; 
+        }
 
         //Moves the player position to the target position (potentially change)
         player.transform.position = Vector3.MoveTowards(player.transform.position, targVec, strafeSpeed);
@@ -123,6 +132,26 @@ public class Run : MonoBehaviour {
         }
         
 	}
+
+    void MoveRight()
+    {
+
+    }
+
+    void MoveLeft()
+    {
+
+    }
+
+    void Jump()
+    {
+
+    }
+
+    void Slide()
+    {
+
+    }
 
     void StopRunning()
     {
@@ -178,7 +207,7 @@ public class Run : MonoBehaviour {
 
             if (!jumping) Stumble();
             else; //good job
-            //stumble, be it a hurdle of half wall
+            //stumble, be it a hurdle or half wall
             //slow down a bit as you trip over obstacle
         }
         else if (collision.gameObject.tag == "Hurdle")

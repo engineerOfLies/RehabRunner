@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json;
 
@@ -10,8 +11,10 @@ public class BuildingCreator : MonoBehaviour
     public float laneWidth, frameLength;
 
     const float SCALE_SCALER = 10;
+    Vector3 origin, lastFramePos;
 
-    public int now;
+    [HideInInspector]
+    public float now;
 
     [System.Serializable]
     public struct Frame
@@ -26,7 +29,7 @@ public class BuildingCreator : MonoBehaviour
         public int repeat;
         public float priority;
         public float weight;
-        public int lastUsed;
+        public float lastUsed;
     }
 
     [System.Serializable]
@@ -36,31 +39,64 @@ public class BuildingCreator : MonoBehaviour
     }
 
     [HideInInspector]
-    static FrameTypes frameData;
+    public static FrameTypes frameData;
+    [HideInInspector]
     public int frameScale = 0; //Saves an int to scale the facade based on how many frames
+    [HideInInspector]
     public int numOfFrames = 0;
-    public GameObject leadingFrame; //Saves the first frame in a building
+    [HideInInspector]
+    public GameObject leadingFrame, lastFrame; //Saves the first frame in a building
+
+    bool startFrame = true;
+
+    int spawnTrigger = 0; //Every frame created, increment by 1. At 10, spawn trigger to spawn more frames
 
     [Header("Tweak to perfection")]
     [SerializeField]
-    private float collectibleHeightOffset, collectibleXOffset;
+    private float collectibleHeightOffset;
+    [SerializeField]
+    private float collectibleXOffset;
+    [SerializeField]
+    private float obstacleXOffset;
+
+    [Header("List of Building Prefabs")]
+    public GameObject[] buildingPrefabs;
+
+    [Header("List of Obstacle Prefabs")]
+    public GameObject[] obstaclePrefabs;
+
+    const int MAX_BUILDINGS = 5;
+    [HideInInspector]
+    public int numBuildings = 0;
+
+    Vector3 fabScale;
 
     // Start is called before the first frame update
     void Start()
     {
+        origin.Set(0, -1.57f, -(frameLength/2));
+        fabScale.Set((float)laneWidth, 0f, (float)frameLength);
 
+        GameObject first = new GameObject();
+        first.transform.position = origin;
+        lastFrame = first;
+        lastFramePos = origin;
         //FrameTypes frameData;
 
         frameData = ReadFrameData("Assets/data.txt");
 
         Debug.Log(frameData.frameTypes[1].weight);
+
+        CreateBuilding(frameData);
+
+        //Create empty frames to start off
+        Debug.Log("Frame length :" + frameLength);
     }
 
     // Update is called once per frame
     void Update()
     {
         //CalculateWeight(frameData);
-
 
     }
 
@@ -78,127 +114,182 @@ public class BuildingCreator : MonoBehaviour
     public void CreateBuilding(FrameTypes listOfFrames)
     {
         //Uses the premade list of frames to create a level
-        GameObject building;
+        GameObject building = new GameObject();
+        building.tag = "Building"; building.name = "Building";
+        BoxCollider bc = building.AddComponent<BoxCollider>(); bc.isTrigger = true;
+        bc.transform.position = lastFrame.transform.position;
         Frame frame;
 
-        int length = 50;
+        numBuildings++;
+
+        int length = 20;
         for (int i = 0; i < length; i++)
         {
-            CalculateWeight(listOfFrames);
+            //Copy ------------
+            CalculateWeight();
 
             //Sort for the heightest weight
-            frame = HighestWeightFrame(listOfFrames);
-            frame.lastUsed = 0;
+            frame = HighestWeightFrame();
+            frame.lastUsed = Time.time;
 
             //Call CreateFrame to make each piece based on the Frame's data
             if (frame.repeat > 0)
             {
-                //Check for repeats, then simply create the same piece again (Potentially after an empty space?)
+                //Check for repeats, then simply create the same piece again (Potentially with an empty space between?)
                 for (int j = 0; j < frame.repeat; j++)
                 {
-                    CreateFrame(frame);
+                    CreateFrame(frame, building);
                 }
 
+                i++;
+                if (i == length) break;
             }
             else
             {
-                CreateFrame(frame);
+                CreateFrame(frame, building);
             }
-
 
             //Piece pieces together to create a complete building
             //Use configuration settings(ie. Lane Width, Frame Length, etc.)
         }
 
-        //Return building GameObject to have and reference later potentially
+        //Return building GameObject to have and reference later potentially?
         return;
+
+        //Copy --------------
     }
 
     //Function to create a set number of frames (n)
     public void CreateBuilding(FrameTypes listOfFrames, int n)
     {
         //Uses the premade list of frames to create a level
-        GameObject building;
-
+        GameObject building = new GameObject();
+        building.tag = "Building"; building.name = "Building";
+        BoxCollider bc = building.AddComponent<BoxCollider>(); bc.isTrigger = true;
+        bc.transform.position = lastFrame.transform.position;
         Frame frame;
 
+        numBuildings++;
+        
         for (int i = 0; i < n; i++)
         {
             //Run the weight calculations
-            CalculateWeight(listOfFrames);
+            CalculateWeight();
 
             //Sort for the heightest weight
-            frame = HighestWeightFrame(listOfFrames);
-            frame.lastUsed = 0;
+            frame = HighestWeightFrame();
+            //frame.lastUsed = Time.time;
 
             //Call CreateFrame to make each piece based on the Frame's data
             if (frame.repeat > 0)
             {
-                //Check for repeats, then simply create the same piece again (Potentially after an empty space?)
+                //Check for repeats, then simply create the same piece again (Potentially with an empty space between?)
                 for (int j = 0; j < frame.repeat; j++)
                 {
-                    CreateFrame(frame);
+                    CreateFrame(frame, building);
                 }
 
+                i++;
+                if (i == n) break;
             }
             else
             {
-                CreateFrame(frame);
+                CreateFrame(frame, building);
             }
-
-
 
             //Piece pieces together to create a complete building
             //Use configuration settings(ie. Lane Width, Frame Length, etc.)
         }
 
-        //Return building GameObject to have and reference later potentially
+        //Return building GameObject to have and reference later potentially?
         return;
+
     }
 
-    public GameObject CreateFrame(Frame f) //Actually build the frame using prefabs and other assets
+    public GameObject CreateFrame(Frame f, GameObject parent) //Actually build the frame using prefabs and other assets
     {
-        GameObject framePiece = new GameObject();
+        f.lastUsed = Time.time;
+        Vector3 sVec;
+        sVec = lastFrame.transform.position;
+        sVec.z += frameLength;
 
-        //If there is any gap (object array index 1) dont create frame, just add boards for bridging
+        GameObject framePiece = new GameObject();
+        //Create empty frame piece as a child under building
+        framePiece.transform.SetParent(parent.transform, true);
+        framePiece.transform.position = sVec;
+        framePiece.name = f.name;
+
+        //Determine the position of this frame
+
+
+        spawnTrigger++; numOfFrames++;
+
+        //If there is any gap (object array index 1) create end frame, add boards for bridging as needed
 
         if (f.obstacles[0] == 1 || f.obstacles[1] == 1 || f.obstacles[2] == 1)
         {
             //Dont create facade
-            frameScale = 0;
+            
+            //
 
             //Add bridges as needed
             if(f.obstacles[0] != 1)
             {
-                //Spawn bridge
+                SpawnPlank(framePiece, 0);
             }
             if(f.obstacles[1] != 1)
             {
-
+                SpawnPlank(framePiece, 1);
             }
             if(f.obstacles[2] != 1)
             {
-
+                SpawnPlank(framePiece, 2);
             }
+
+            startFrame = true; //Sets to true so next piece will have the special starting frame
             //Return
         }
         else
         {
-            if (frameScale == 0) //If this is the first frame after a gap, remember its location?
+
+            if (startFrame) //Checks if this frame starts the next chunk (after gap)
             {
-                leadingFrame = framePiece;
-                //create new facade
+                //Uses a special starting frame slice
+                framePiece.name += " - starter";
+                GameObject startFloor = Instantiate(buildingPrefabs[2], sVec, Quaternion.identity, framePiece.transform);
+                startFloor.transform.localScale = fabScale;
+                startFrame = false; //Resets it back to false after being used
             }
-            
-            frameScale++;
+            else
+            {
+                GameObject floor = Instantiate(buildingPrefabs[0], sVec, Quaternion.identity, framePiece.transform);
+                floor.transform.localScale = fabScale;
+            }
+
+            if(f.obstacles.Sum() != 0)
+            {
+                framePiece = SpawnObstacles(framePiece, f);
+            }
+   
         }
-
-
-        //Check for what pieces are in the frame
         
 
-        framePiece = PlaceCollectibles(framePiece, f);
+        //Check for what pieces are in the frame
 
+        if (f.collectables.Sum() != 0)
+        {
+            framePiece = PlaceCollectibles(framePiece, f);
+        }
+
+        if(spawnTrigger >= 10 ) //Once 10 frames are created, create a trigger to spawn another set when the player passes through
+        {
+            Instantiate(buildingPrefabs[3], framePiece.transform.position, Quaternion.identity, framePiece.transform);
+            framePiece.name += " /w Spawn Trigger";
+            spawnTrigger = 0;
+        }
+
+        lastFrame = framePiece;
+        //lastFramePos = lastFrame.transform.position;
         return framePiece;
     }
 
@@ -215,31 +306,33 @@ public class BuildingCreator : MonoBehaviour
     }
 
     //Calculates weight for all frames in the frameType object
-    public void CalculateWeight(FrameTypes data)
+    public void CalculateWeight()
     {
-        int diff, num;
-        float freq;
+
+        int num;
+        float freq, diff;
         num = 0;
-        foreach (Frame f in data.frameTypes)
+        foreach (Frame f in frameData.frameTypes)
         {
-            diff = now - data.frameTypes[num].lastUsed;
-            if (diff < data.frameTypes[num].frameDelay)
+            now = Time.time;
+            diff = now - frameData.frameTypes[num].lastUsed;
+            if (diff < frameData.frameTypes[num].frameDelay)
             {
-                data.frameTypes[num].weight = -1;
-                Debug.Log("Calculated weight for " + data.frameTypes[num].name + " at " + data.frameTypes[num].weight);
+                frameData.frameTypes[num].weight = -1;
+                Debug.Log("Calculated weight for " + frameData.frameTypes[num].name + " at " + frameData.frameTypes[num].weight);
                 num++;
                 return;
             }
-            if ((data.frameTypes[num].frameCap > 0) && (diff > data.frameTypes[num].frameCap))
+            if ((frameData.frameTypes[num].frameCap > 0) && (diff > frameData.frameTypes[num].frameCap))
             {
-                data.frameTypes[num].weight = -1;
-                Debug.Log("Calculated weight for " + data.frameTypes[num].name + " at " + data.frameTypes[num].weight);
+                frameData.frameTypes[num].weight = -1;
+                Debug.Log("Calculated weight for " + frameData.frameTypes[num].name + " at " + frameData.frameTypes[num].weight);
                 num++;
                 return;
             }
-            freq = data.frameTypes[num].frequency - (float)(diff * data.frameTypes[num].frequencyDelta);
-            data.frameTypes[num].weight = data.frameTypes[num].priority * diff + data.frameTypes[num].priority * freq * 0.00001f;
-            Debug.Log("Calculated weight for " + data.frameTypes[num].name + " at " + data.frameTypes[num].weight);
+            freq = frameData.frameTypes[num].frequency - (float)(diff * frameData.frameTypes[num].frequencyDelta);
+            frameData.frameTypes[num].weight = frameData.frameTypes[num].priority * diff + frameData.frameTypes[num].priority * freq * 0.00001f;
+            Debug.Log("Calculated weight for " + frameData.frameTypes[num].name + " at " + frameData.frameTypes[num].weight);
             num++;
         }
 
@@ -251,31 +344,32 @@ public class BuildingCreator : MonoBehaviour
 
     }
 
-    public Frame HighestWeightFrame(FrameTypes fr)
+    public Frame HighestWeightFrame()
     {
         Frame highest;
 
-
-        highest = fr.frameTypes[0];
+        int s = 0; //Tracks the spot in the array of the highest weight frame
+        highest = frameData.frameTypes[0];
 
         //Searches the list of frames to find the highest weight
         //Then Returns it
-        foreach (Frame frm in fr.frameTypes)
+        for (int i = 0; i < frameData.frameTypes.Length; i++)
         {
-            if (frm.weight < highest.weight) continue; //If the current frame'sweight is lower than the highest, skip
+            if (frameData.frameTypes[i].weight < highest.weight) continue; //If the current frame'sweight is lower than the highest, skip
 
-            if (frm.weight == highest.weight) // If the current frame's weight is equal to the highest, check priority
+            if (frameData.frameTypes[i].weight == highest.weight) // If the current frame's weight is equal to the highest, check priority
             {
-                if (frm.priority <= highest.priority) continue;
+                if (frameData.frameTypes[i].priority <= highest.priority) continue;
 
-                highest = frm;
+                highest = frameData.frameTypes[i]; s = i;
                 continue;
             }
 
-            highest = frm;
+            highest = frameData.frameTypes[i]; s = i;
 
         }
 
+        frameData.frameTypes[s].lastUsed = Time.time;
         return highest;
     }
 
@@ -318,6 +412,99 @@ public class BuildingCreator : MonoBehaviour
         }
 
         return g;
+    }
+
+    public GameObject SpawnObstacles(GameObject g, Frame f)
+    {
+        bool b = false;
+
+        for (int i = 0; i < 3; i++)
+        {
+            switch (f.obstacles[i])
+            {
+                case 2: //power lines -- check if whole frame wide
+                    if(i+1 < 3) //Dont want an out of bounds error
+                    {
+                        if(f.obstacles[i+1] == 2) // Checks if the next spot is a powerline.
+                        {
+                            if(i+1 <3)
+                            {
+                                if(f.obstacles[i + 1] == 2) //Check the next
+                                {
+                                    //spawn a 3 wide powerline over the whole frame
+                                    //Instantiate(whatever it is)
+                                    //also break out the whole for loop with b, because nothing else can spawn
+                                    b = true;
+                                    break;
+                                }
+                            }
+                            //If it is just a 2 wide, spawn that
+
+                            break;
+                        }
+                        else //If not, spawn a single then break
+                        {
+                            Instantiate(obstaclePrefabs[0], Spot(i, g), Quaternion.identity, g.transform);
+                            break;
+                        }
+                        
+                    }
+                    Instantiate(obstaclePrefabs[0], Spot(i, g), Quaternion.identity, g.transform);
+                    break;
+                case 3: //wall
+
+                    Instantiate(obstaclePrefabs[1], Spot(i, g), Quaternion.identity, g.transform);
+                    break;
+
+                default:
+                    Debug.Log("Object " + f.obstacles[i] + " not set in prefab list");
+                    break;
+            }
+
+            if (b) break;
+        }
+
+        return g;
+    }
+
+    Vector3 Spot(int i, GameObject g) //Simple function to decide where to spawn objects
+    {
+        Vector3 vec = Vector3.zero;
+        float x = 0;
+
+        if (i == 0) x = g.transform.position.x - obstacleXOffset;
+
+        if (i == 2) x = g.transform.position.x + obstacleXOffset;
+
+        vec.Set(x, g.transform.position.y, g.transform.position.z);
+
+        return vec;
+    }
+
+    void SpawnPlank(GameObject frame, int n)
+    {
+        GameObject plank = new GameObject();
+        plank.name = "Plank";
+        switch (n)
+        {
+            case 0:
+                plank = Instantiate(buildingPrefabs[1], Spot(0, plank), Quaternion.identity, frame.transform);
+                break;
+            case 1:
+                plank = Instantiate(buildingPrefabs[1], Spot(1, plank), Quaternion.identity, frame.transform);
+                break;
+            case 2:
+                plank = Instantiate(buildingPrefabs[1], Spot(2, plank), Quaternion.identity, frame.transform);
+                break;
+            default:
+                Debug.Log("Wrong position selected");
+                break;
+        }
+    }
+
+    void OnTriggerEnter(Collider col)
+    {
+        if (col.tag == "SpawnTrigger" && (numBuildings<MAX_BUILDINGS)) CreateBuilding(frameData, 10);
     }
 }
 
