@@ -80,10 +80,11 @@ public class Run : MonoBehaviour {
             slideTimer -= Time.deltaTime;
         }
 
-        if(jumpTimer>0)
+        if (jumpTimer > 0)
         {
             jumpTimer -= Time.deltaTime;
         }
+        else jumping = false;
 
         buildings = GameObject.FindGameObjectsWithTag("Building");
 
@@ -118,7 +119,7 @@ public class Run : MonoBehaviour {
             
             //play jump animation
             
-            //Debug.Log("Yump");
+            Debug.Log("Yump");
 
             jumping = true;
             jumpTimer = jumpTimerSet; //tie to animation time
@@ -166,7 +167,16 @@ public class Run : MonoBehaviour {
         //call stumble animation also
         //slow speed after?
     }
-    
+
+    void PlayStumbleAnim()
+    {
+        //Default stumble
+    }
+    void PlayStumbleAnim(int n)
+    {
+        //Can give this function a number based on which anim to play
+    }
+
     void OnCollisionExit(Collision collision)
     {
 
@@ -178,7 +188,7 @@ public class Run : MonoBehaviour {
     void OnCollisionEnter(Collision collision)
     {
 
-        if (collision.gameObject.tag == "Facade")
+        if (collision.gameObject.tag == "Facade") //not in use
         {
             //you fell
             //do something with climbing back up, idk
@@ -188,6 +198,7 @@ public class Run : MonoBehaviour {
         }
         else if (collision.gameObject.tag == "Wall")
         {
+            PlayStumbleAnim();
             //the player hit a wall
             //stop until they move back over
         }
@@ -197,7 +208,10 @@ public class Run : MonoBehaviour {
     {
         if (collision.gameObject.tag == "Slide")
         {
-            if (!sliding) Stumble(); // Maybe make a different animation for this?
+            if (!sliding)
+            {
+                PlayStumbleAnim(); //Stumble(); // Maybe make a different animation for this?
+            }
             else; //good job
             //the player hit an obstacle they had to slide under
             //fall down under it and get up on the other side, slower
@@ -205,15 +219,31 @@ public class Run : MonoBehaviour {
         else if (collision.gameObject.tag == "HalfWall")
         {
 
-            if (!jumping) Stumble();
+            if (!jumping)
+            {
+                PlayStumbleAnim(); //Stumble();
+            }
             else; //good job
             //stumble, be it a hurdle or half wall
             //slow down a bit as you trip over obstacle
         }
         else if (collision.gameObject.tag == "Hurdle")
         {
-            if (!sliding && !jumping) Stumble(); //the player stumbles if they aren't sliding or jumping
+            if (!sliding && !jumping)
+            {
+                PlayStumbleAnim(); //the player stumbles if they aren't sliding or jumping
+            }
             else; //good job
+        }
+        else if (collision.gameObject.tag == "Gap")
+        {
+            if (!jumping)
+            {
+                PlayStumbleAnim(); //fall into gap and stumble a bit, dont slow
+                Debug.Log("You fell into the gap");
+            }
+            else;
+
         }
         else if (collision.gameObject.tag == "GoldBar")
         {
@@ -223,5 +253,14 @@ public class Run : MonoBehaviour {
             //oh and kill the bar
             Destroy(collision.gameObject);
         }
+        else if (collision.gameObject.tag == "GoldBarHigh" && jumping)
+        {
+            //get points, add score, good jorb? GO FASTER??
+            score += pointsPerBar;
+            //def pickup noise, like uh... a 'brring' or somethin, yeah
+            //oh and kill the bar
+            Destroy(collision.gameObject);
+        }
+        
     }
 }

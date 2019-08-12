@@ -75,7 +75,7 @@ public class BuildingCreator : MonoBehaviour
     void Start()
     {
         origin.Set(0, -1.57f, -(frameLength/2));
-        fabScale.Set((float)laneWidth, 0f, (float)frameLength);
+        fabScale.Set((float)laneWidth, 1f, (float)frameLength);
 
         GameObject first = new GameObject();
         first.transform.position = origin;
@@ -139,10 +139,12 @@ public class BuildingCreator : MonoBehaviour
                 for (int j = 0; j < frame.repeat; j++)
                 {
                     CreateFrame(frame, building);
+
+                    i++;
+                    if (i == length) break;
                 }
 
-                i++;
-                if (i == length) break;
+                
             }
             else
             {
@@ -187,10 +189,12 @@ public class BuildingCreator : MonoBehaviour
                 for (int j = 0; j < frame.repeat; j++)
                 {
                     CreateFrame(frame, building);
+
+                    i++;
+                    if (i == n) break;
                 }
 
-                i++;
-                if (i == n) break;
+                
             }
             else
             {
@@ -237,14 +241,17 @@ public class BuildingCreator : MonoBehaviour
             {
                 SpawnPlank(framePiece, 0);
             }
-            if(f.obstacles[1] != 1)
+            else Instantiate(obstaclePrefabs[2], new Vector3(-obstacleXOffset, 0f, framePiece.transform.position.z), Quaternion.identity, framePiece.transform);
+            if (f.obstacles[1] != 1)
             {
                 SpawnPlank(framePiece, 1);
             }
-            if(f.obstacles[2] != 1)
+            else Instantiate(obstaclePrefabs[2], new Vector3(0f, 0f, framePiece.transform.position.z), Quaternion.identity, framePiece.transform);
+            if (f.obstacles[2] != 1)
             {
                 SpawnPlank(framePiece, 2);
             }
+            else Instantiate(obstaclePrefabs[2], new Vector3(obstacleXOffset, 0f, framePiece.transform.position.z), Quaternion.identity, framePiece.transform);
 
             startFrame = true; //Sets to true so next piece will have the special starting frame
             //Return
@@ -388,27 +395,27 @@ public class BuildingCreator : MonoBehaviour
         {
             //switch case it if more than single coin object
             //for now, dont worry
-            //Instantiate(coin, new Vector3(-collectibleXOffest, collectibleHeightOffset, center), Quaternion.identity, g);
+            Instantiate(buildingPrefabs[4], new Vector3(-collectibleXOffset, collectibleHeightOffset, center), Quaternion.identity, g.transform);
         }
         if (f.collectables[1] != 0)
         {
-            //Instantiate(coin, new Vector3(0, collectibleHeightOffset, center), Quaternion.identity, g);
+            Instantiate(buildingPrefabs[4], new Vector3(0, collectibleHeightOffset, center), Quaternion.identity, g.transform);
         }
         if (f.collectables[2] != 0)
         {
-            //Instantiate(coin, new Vector3(collectibleXOffest, collectibleHeightOffset, center), Quaternion.identity, g);
+            Instantiate(buildingPrefabs[4], new Vector3(collectibleXOffset, collectibleHeightOffset, center), Quaternion.identity, g.transform);
         }
         if (f.collectables[3] != 0)
         {
-            //Instantiate(coin, new Vector3(-collectibleXOffest, collectibleHeightOffset*2, center), Quaternion.identity, g);
+            Instantiate(buildingPrefabs[5], new Vector3(-collectibleXOffset, collectibleHeightOffset+2f, center), Quaternion.identity, g.transform);
         }
         if (f.collectables[4] != 0)
         {
-            //Instantiate(coin, new Vector3(0, collectibleHeightOffset*2, center), Quaternion.identity, g);
+            Instantiate(buildingPrefabs[5], new Vector3(0, collectibleHeightOffset+2f, center), Quaternion.identity, g.transform);
         }
         if (f.collectables[5] != 0)
         {
-            //Instantiate(coin, new Vector3(collectibleXOffest, collectibleHeightOffset*2, center), Quaternion.identity, g);
+            Instantiate(buildingPrefabs[5], new Vector3(collectibleXOffset, collectibleHeightOffset+2f, center), Quaternion.identity, g.transform);
         }
 
         return g;
@@ -504,7 +511,7 @@ public class BuildingCreator : MonoBehaviour
 
     void OnTriggerEnter(Collider col)
     {
-        if (col.tag == "SpawnTrigger" && (numBuildings<MAX_BUILDINGS)) CreateBuilding(frameData, 10);
+        if (col.tag == "SpawnTrigger" && (numBuildings<MAX_BUILDINGS)) CreateBuilding(frameData, 20);
     }
 }
 
