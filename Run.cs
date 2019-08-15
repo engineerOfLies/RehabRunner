@@ -19,27 +19,43 @@ public class Run : MonoBehaviour {
     [Range(0,5)]
     public float strafeSpeed;
 
+    private Animator anim;
+    private GameObject bab;
     
     string left = "a" , right = "d";
 
     [SerializeField]
     private float strafeDistance = 50f, stumbleTimerSet, slideTimerSet, jumpTimerSet;
 
-    bool jumping = false, climbing = false, sliding;
+    bool jumping = false, climbing = false, sliding = false;
     bool leftLane = false, rightLane = false;
 
     private GameObject[] buildings;
 
+    Renderer rend;
+
+    [System.Serializable]
+    struct SaveData
+    {
+
+    }
+
+    List<SaveData> saves;
+    
+
 	// Use this for initialization
 	void Start ()
     {
-        
+        bab = this.gameObject.transform.GetChild(0).gameObject;
+
         xVec.Set(strafeDistance, 0, 0);
         zVec = Vector3.zero;
 
         velStep.Set(0, -.1f, 0);
         velZero.Set(0, 0, 0);
-        
+
+        rend = bab.GetComponent<Renderer>();
+        anim = bab.GetComponent<Animator>();
     }
 	
 	// Update is called once per frame
@@ -71,14 +87,19 @@ public class Run : MonoBehaviour {
 
         if(stumbleTimer>0)
         {
-            zVec.z = zVec.z * .5f;
+            //zVec.z = zVec.z * .5f;
             stumbleTimer -= Time.deltaTime;
         }
+        else
+        {
+            rend.material.color = Color.gray;
+        }
 
-        if(slideTimer>0)
+        if (slideTimer > 0)
         {
             slideTimer -= Time.deltaTime;
         }
+        else sliding = false;
 
         if (jumpTimer > 0)
         {
@@ -99,15 +120,17 @@ public class Run : MonoBehaviour {
         //CHANGE TO SET POSITIONS--LESS ROOM FOR ERROR
         if (Input.GetKeyDown(KeyCode.RightArrow) && !rightLane)
         {
-            targVec += xVec;
-            if (leftLane) leftLane = false; //If the player is in the left lane, set left to false and dont change right
-            else rightLane = true; //Otherwise, the player must be entering the right lane
+            MoveRight();
+            //targVec += xVec;
+            //if (leftLane) leftLane = false; //If the player is in the left lane, set left to false and dont change right
+            //else rightLane = true; //Otherwise, the player must be entering the right lane
         }
         else if (Input.GetKeyDown(KeyCode.LeftArrow) && !leftLane)
         {
-            targVec -= xVec;
-            if (rightLane) rightLane = false; // vice versa
-            else leftLane = true; 
+            MoveLeft();
+            //targVec -= xVec;
+            //if (rightLane) rightLane = false; // vice versa
+            //else leftLane = true; 
         }
 
         //Moves the player position to the target position (potentially change)
@@ -116,42 +139,73 @@ public class Run : MonoBehaviour {
         //Allows the player to jump if jump is not on cooldown
         if (Input.GetAxis("Jump")!= 0 && !jumping)
         {
-            
+            Jump();
             //play jump animation
             
-            Debug.Log("Yump");
+            //Debug.Log("Yump");
 
-            jumping = true;
-            jumpTimer = jumpTimerSet; //tie to animation time
+            //jumping = true;
+            //jumpTimer = jumpTimerSet; //tie to animation time
         }
 
         if (Input.GetAxis("Slide")!= 0 && !sliding && !jumping)
         {
-            //play slide animation
-            sliding = true;
-            slideTimer = slideTimerSet;
+            Slide();
+            ////play slide animation
+            //sliding = true;
+            //slideTimer = slideTimerSet;
         }
         
 	}
 
-    void MoveRight()
+    public void GetFrameData() //Saves frame underneath player at current time with action inputted 
     {
 
+    }
+
+    void MoveRight()
+    {
+        if(!rightLane)
+        {
+            targVec += xVec;
+            if (leftLane) leftLane = false; //If the player is in the left lane, set left to false and dont change right
+            else rightLane = true; //Otherwise, the player must be entering the right lane
+        }
     }
 
     void MoveLeft()
     {
-
+        if(!leftLane)
+        {
+            targVec -= xVec;
+            if (rightLane) rightLane = false; // vice versa
+            else leftLane = true;
+        }
     }
 
     void Jump()
     {
+        if (!jumping)
+        {
+            Debug.Log("Yump");
 
+            jumping = true;
+            jumpTimer = jumpTimerSet; //tie to animation time
+
+            anim.Play("Jump", 0, 0f);
+        }
     }
 
     void Slide()
     {
+        if (!sliding && !jumping)
+        {
+            //play slide animation
+            sliding = true;
+            slideTimer = slideTimerSet;
 
+            anim.Play("Slide", 0, 0f);
+        }
     }
 
     void StopRunning()
@@ -164,6 +218,7 @@ public class Run : MonoBehaviour {
     void Stumble()
     {
         stumbleTimer = stumbleTimerSet;
+        rend.material.color = Color.red;
         //call stumble animation also
         //slow speed after?
     }
@@ -199,6 +254,7 @@ public class Run : MonoBehaviour {
         else if (collision.gameObject.tag == "Wall")
         {
             PlayStumbleAnim();
+            Stumble();
             //the player hit a wall
             //stop until they move back over
         }
@@ -211,6 +267,7 @@ public class Run : MonoBehaviour {
             if (!sliding)
             {
                 PlayStumbleAnim(); //Stumble(); // Maybe make a different animation for this?
+                Stumble();
             }
             else; //good job
             //the player hit an obstacle they had to slide under
@@ -222,6 +279,7 @@ public class Run : MonoBehaviour {
             if (!jumping)
             {
                 PlayStumbleAnim(); //Stumble();
+                Stumble();
             }
             else; //good job
             //stumble, be it a hurdle or half wall
@@ -231,7 +289,8 @@ public class Run : MonoBehaviour {
         {
             if (!sliding && !jumping)
             {
-                PlayStumbleAnim(); //the player stumbles if they aren't sliding or jumping
+                PlayStumbleAnim(); //the player stumbles if they aren't sliding or jumping\
+                Stumble();
             }
             else; //good job
         }
@@ -240,6 +299,7 @@ public class Run : MonoBehaviour {
             if (!jumping)
             {
                 PlayStumbleAnim(); //fall into gap and stumble a bit, dont slow
+                Stumble();
                 Debug.Log("You fell into the gap");
             }
             else;

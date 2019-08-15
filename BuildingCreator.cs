@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 
 public class BuildingCreator : MonoBehaviour
 {
@@ -69,6 +69,7 @@ public class BuildingCreator : MonoBehaviour
     [HideInInspector]
     public int numBuildings = 0;
 
+    bool prevGap = false;
     Vector3 fabScale;
 
     // Start is called before the first frame update
@@ -83,7 +84,7 @@ public class BuildingCreator : MonoBehaviour
         lastFramePos = origin;
         //FrameTypes frameData;
 
-        frameData = ReadFrameData("Assets/data.txt");
+        frameData = ReadFrameData(Application.dataPath+"/data.txt");
 
         Debug.Log(frameData.frameTypes[1].weight);
 
@@ -104,7 +105,7 @@ public class BuildingCreator : MonoBehaviour
     {
         string json = File.ReadAllText(jsonFile);
         Debug.Log(json);
-        FrameTypes frames = JsonConvert.DeserializeObject<FrameTypes>(json);
+        FrameTypes frames = JsonUtility.FromJson<FrameTypes>(json);
         //List<Frame> frameData = new List<Frame>();
 
         return frames;
@@ -218,6 +219,7 @@ public class BuildingCreator : MonoBehaviour
         sVec.z += frameLength;
 
         GameObject framePiece = new GameObject();
+        framePiece.tag = "Frame";
         //Create empty frame piece as a child under building
         framePiece.transform.SetParent(parent.transform, true);
         framePiece.transform.position = sVec;
@@ -233,6 +235,7 @@ public class BuildingCreator : MonoBehaviour
         if (f.obstacles[0] == 1 || f.obstacles[1] == 1 || f.obstacles[2] == 1)
         {
             //Dont create facade
+            
             
             //
 
@@ -258,7 +261,7 @@ public class BuildingCreator : MonoBehaviour
         }
         else
         {
-
+            
             if (startFrame) //Checks if this frame starts the next chunk (after gap)
             {
                 //Uses a special starting frame slice
@@ -376,7 +379,18 @@ public class BuildingCreator : MonoBehaviour
 
         }
 
-        frameData.frameTypes[s].lastUsed = Time.time;
+        if (frameData.frameTypes[s].name == "gap")
+        {
+            for (int k = 0; k < frameData.frameTypes.Length; k++)
+            {
+                if (frameData.frameTypes[k].name == "gap") frameData.frameTypes[k].lastUsed = Time.time;
+            }
+
+        }
+        else
+        {
+            frameData.frameTypes[s].lastUsed = Time.time;
+        }
         return highest;
     }
 
@@ -490,18 +504,22 @@ public class BuildingCreator : MonoBehaviour
 
     void SpawnPlank(GameObject frame, int n)
     {
-        GameObject plank = new GameObject();
-        plank.name = "Plank";
+        //GameObject plank = new GameObject();
+        //plank.transform.position = frame.transform.position;
+        //plank.name = "Plank";
         switch (n)
         {
             case 0:
-                plank = Instantiate(buildingPrefabs[1], Spot(0, plank), Quaternion.identity, frame.transform);
+                GameObject plank = Instantiate(buildingPrefabs[1], Spot(0, frame), Quaternion.identity, frame.transform);
+                plank.name = "Plank";
                 break;
             case 1:
-                plank = Instantiate(buildingPrefabs[1], Spot(1, plank), Quaternion.identity, frame.transform);
+                plank = Instantiate(buildingPrefabs[1], Spot(1, frame), Quaternion.identity, frame.transform);
+                plank.name = "Plank";
                 break;
             case 2:
-                plank = Instantiate(buildingPrefabs[1], Spot(2, plank), Quaternion.identity, frame.transform);
+                plank = Instantiate(buildingPrefabs[1], Spot(2, frame), Quaternion.identity, frame.transform);
+                plank.name = "Plank";
                 break;
             default:
                 Debug.Log("Wrong position selected");

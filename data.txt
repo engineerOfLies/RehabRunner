@@ -16,9 +16,9 @@
             "name":"gap",
             "obstacles":[1,1,1],
             "collectables":[0,0,0,0,0,0],
-            "frameDelay":10,
+            "frameDelay":12,
             "frameCap":-1,
-            "frequency":0.1,
+            "frequency":0.3,
             "frequencyDelta":0,
             "priority":1,
             "repeat":0
@@ -38,9 +38,9 @@
             "name":"left wall",
             "obstacles":[3,0,0],
             "collectables":[0,0,0,0,0,0],
-            "frameDelay":40,
+            "frameDelay":10,
             "frameCap":-1,
-            "frequency":0.5,
+            "frequency":0.8,
             "frequencyDelta":0,
             "priority":0.5,
             "repeat":3
