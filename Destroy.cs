@@ -21,10 +21,18 @@ public class Destroy : MonoBehaviour
     void OnTriggerEnter(Collider col)
     {
         Debug.Log("Touching");
-        if (col.gameObject.tag == "Building")
+        if (col.gameObject.name == "Clouds" || col.gameObject.name == "Clouds(Clone)") 
+        {
+            bc.SpawnClouds();
+            Destroy(col.gameObject);
+            
+        }
+        else if (col.gameObject.tag == "Building")
         {
             Destroy(col.gameObject);
             bc.numBuildings--;
         }
+
+        
     }
 }

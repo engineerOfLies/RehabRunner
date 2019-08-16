@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 
 
@@ -35,12 +37,15 @@ public class Run : MonoBehaviour {
     Renderer rend;
 
     [System.Serializable]
-    struct SaveData
+    public struct SaveData
     {
-
+        public float timePerformed; //in milliseconds
+        public string action; //the action (or collision) performed
     }
 
-    List<SaveData> saves;
+    public List<SaveData> saves;
+
+    bool save = true; //Set to true to save data
     
 
 	// Use this for initialization
@@ -158,32 +163,39 @@ public class Run : MonoBehaviour {
         
 	}
 
-    public void GetFrameData() //Saves frame underneath player at current time with action inputted 
+    public void SaveAction(string s) //Saves current time with action inputted 
     {
-
+        if (save)
+        {
+            saves.Add(new SaveData() { timePerformed = Time.time * 1000f, action = s });
+        }
     }
 
-    void MoveRight()
+    public void MoveRight()
     {
         if(!rightLane)
         {
             targVec += xVec;
             if (leftLane) leftLane = false; //If the player is in the left lane, set left to false and dont change right
             else rightLane = true; //Otherwise, the player must be entering the right lane
+
+            SaveAction("Move Right");
         }
     }
 
-    void MoveLeft()
+    public void MoveLeft()
     {
         if(!leftLane)
         {
             targVec -= xVec;
             if (rightLane) rightLane = false; // vice versa
             else leftLane = true;
+
+            SaveAction("Move Left");
         }
     }
 
-    void Jump()
+    public void Jump()
     {
         if (!jumping)
         {
@@ -193,10 +205,12 @@ public class Run : MonoBehaviour {
             jumpTimer = jumpTimerSet; //tie to animation time
 
             anim.Play("Jump", 0, 0f);
+
+            SaveAction("Jump");
         }
     }
 
-    void Slide()
+    public void Slide()
     {
         if (!sliding && !jumping)
         {
@@ -205,22 +219,26 @@ public class Run : MonoBehaviour {
             slideTimer = slideTimerSet;
 
             anim.Play("Slide", 0, 0f);
+
+            SaveAction("Slide"); //Slide or duck, whatever
         }
     }
 
-    void StopRunning()
+    public void StopRunning()
     {
 
 
     }
 
     //Player stumbles over an obstacle and slows down for a moment
-    void Stumble()
+    public void Stumble()
     {
         stumbleTimer = stumbleTimerSet;
         rend.material.color = Color.red;
         //call stumble animation also
         //slow speed after?
+
+        SaveAction("Stumble"); //Player hit something
     }
 
     void PlayStumbleAnim()
@@ -266,7 +284,7 @@ public class Run : MonoBehaviour {
         {
             if (!sliding)
             {
-                PlayStumbleAnim(); //Stumble(); // Maybe make a different animation for this?
+                PlayStumbleAnim(); // Maybe make a different animation for this?
                 Stumble();
             }
             else; //good job
@@ -278,7 +296,7 @@ public class Run : MonoBehaviour {
 
             if (!jumping)
             {
-                PlayStumbleAnim(); //Stumble();
+                PlayStumbleAnim(); 
                 Stumble();
             }
             else; //good job
@@ -322,5 +340,36 @@ public class Run : MonoBehaviour {
             Destroy(collision.gameObject);
         }
         
+    }
+
+    void OnApplicationQuit()
+    {
+        if(save)WriteFile();
+    }
+
+    void WriteFile()
+    {
+        bool c = true;
+        int i = 1;
+        string fileName = "t", line;
+
+        while (c)
+        {
+            fileName = "ActionData" + i + ".csv";
+            if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
+            else c = false;
+        }
+        StreamWriter sw = new StreamWriter(fileName);
+        //Write list of saved data to file
+        string header = "Time(Milliseconds),Action";
+        sw.WriteLine(header);
+        foreach (var SaveData in saves)
+        {
+            line = SaveData.timePerformed + "," + SaveData.action;
+            sw.WriteLine(line);
+        }
+
+        sw.Flush();
+        sw.Close();
     }
 }

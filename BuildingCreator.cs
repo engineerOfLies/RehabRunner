@@ -38,6 +38,18 @@ public class BuildingCreator : MonoBehaviour
         public Frame[] frameTypes;
     }
 
+    [System.Serializable]
+    public struct WorldSave
+    {
+        public string name;
+        public float timePlayerTouch;
+    }
+
+    bool save = true;
+
+    [HideInInspector]
+    public List<WorldSave> world;
+
     [HideInInspector]
     public static FrameTypes frameData;
     [HideInInspector]
@@ -72,6 +84,8 @@ public class BuildingCreator : MonoBehaviour
     bool prevGap = false;
     Vector3 fabScale;
 
+    int cloudOffset = 300;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -92,6 +106,8 @@ public class BuildingCreator : MonoBehaviour
 
         //Create empty frames to start off
         Debug.Log("Frame length :" + frameLength);
+
+        SpawnClouds();
     }
 
     // Update is called once per frame
@@ -225,6 +241,10 @@ public class BuildingCreator : MonoBehaviour
         framePiece.transform.position = sVec;
         framePiece.name = f.name;
 
+        BoxCollider boxCollider = framePiece.AddComponent<BoxCollider>();
+        boxCollider.isTrigger = true;
+        boxCollider.size = new Vector3(20f, 10f, .1f);
+
         //Determine the position of this frame
 
 
@@ -319,12 +339,11 @@ public class BuildingCreator : MonoBehaviour
     public void CalculateWeight()
     {
 
-        int num;
-        float freq, diff;
-        num = 0;
+        int num = 0;
+        float freq, diff;       
         foreach (Frame f in frameData.frameTypes)
         {
-            now = Time.time;
+            now = Time.time*1000; //In milliseconds
             diff = now - frameData.frameTypes[num].lastUsed;
             if (diff < frameData.frameTypes[num].frameDelay)
             {
@@ -340,7 +359,7 @@ public class BuildingCreator : MonoBehaviour
                 num++;
                 return;
             }
-            freq = frameData.frameTypes[num].frequency - (float)(diff * frameData.frameTypes[num].frequencyDelta);
+            freq = frameData.frameTypes[num].frequency - (float)(diff * frameData.frameTypes[num].frequencyDelta); //Check
             frameData.frameTypes[num].weight = frameData.frameTypes[num].priority * diff + frameData.frameTypes[num].priority * freq * 0.00001f;
             Debug.Log("Calculated weight for " + frameData.frameTypes[num].name + " at " + frameData.frameTypes[num].weight);
             num++;
@@ -383,13 +402,13 @@ public class BuildingCreator : MonoBehaviour
         {
             for (int k = 0; k < frameData.frameTypes.Length; k++)
             {
-                if (frameData.frameTypes[k].name == "gap") frameData.frameTypes[k].lastUsed = Time.time;
+                if (frameData.frameTypes[k].name == "gap") frameData.frameTypes[k].lastUsed = Time.time*1000;
             }
 
         }
         else
         {
-            frameData.frameTypes[s].lastUsed = Time.time;
+            frameData.frameTypes[s].lastUsed = Time.time*1000;
         }
         return highest;
     }
@@ -477,6 +496,21 @@ public class BuildingCreator : MonoBehaviour
                     Instantiate(obstaclePrefabs[1], Spot(i, g), Quaternion.identity, g.transform);
                     break;
 
+                case 4: //Half Wall (Jump)
+
+                    Instantiate(obstaclePrefabs[3], (Spot(i, g) + new Vector3(0f, -.5f, 0f)), Quaternion.identity, g.transform);
+                    break;
+
+                case 5: //Slide
+
+                    Instantiate(obstaclePrefabs[4], (Spot(i, g) + new Vector3(0f, 1.5f, 0f)), Quaternion.identity, g.transform);
+                    break;
+
+                case 6: //Hurdle (Slide or Jump)
+
+                    Instantiate(obstaclePrefabs[5], (Spot(i, g) + new Vector3(0f, .5f, 0f)), Quaternion.identity, g.transform);
+                    break;
+
                 default:
                     Debug.Log("Object " + f.obstacles[i] + " not set in prefab list");
                     break;
@@ -510,15 +544,15 @@ public class BuildingCreator : MonoBehaviour
         switch (n)
         {
             case 0:
-                GameObject plank = Instantiate(buildingPrefabs[1], Spot(0, frame), Quaternion.identity, frame.transform);
+                GameObject plank = Instantiate(buildingPrefabs[1], (Spot(0, frame) + new Vector3(0f, 0.5f, 0f)), Quaternion.identity, frame.transform);
                 plank.name = "Plank";
                 break;
             case 1:
-                plank = Instantiate(buildingPrefabs[1], Spot(1, frame), Quaternion.identity, frame.transform);
+                plank = Instantiate(buildingPrefabs[1], (Spot(1, frame) + new Vector3(0f, 0.5f, 0f)), Quaternion.identity, frame.transform);
                 plank.name = "Plank";
                 break;
             case 2:
-                plank = Instantiate(buildingPrefabs[1], Spot(2, frame), Quaternion.identity, frame.transform);
+                plank = Instantiate(buildingPrefabs[1], (Spot(2, frame)+new Vector3(0f,0.5f,0f)), Quaternion.identity, frame.transform);
                 plank.name = "Plank";
                 break;
             default:
@@ -527,9 +561,50 @@ public class BuildingCreator : MonoBehaviour
         }
     }
 
+    public void SpawnClouds()
+    {
+        Instantiate(buildingPrefabs[6], new Vector3(72f, 14f, (float)cloudOffset), Quaternion.identity);
+    }
+
     void OnTriggerEnter(Collider col)
     {
         if (col.tag == "SpawnTrigger" && (numBuildings<MAX_BUILDINGS)) CreateBuilding(frameData, 20);
+
+        if(col.tag == "Frame" && save)
+        {
+            world.Add(new WorldSave() {name = col.gameObject.name, timePlayerTouch = Time.time*1000f});
+        }
+    }
+
+    void WriteFile()
+    {
+        bool c = true;
+        int i = 1;
+        string fileName = "t", line;
+
+        while (c)
+        {
+            fileName = "WorldData" + i + ".csv";
+            if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
+            else c = false;
+        }
+        StreamWriter sw = new StreamWriter(fileName);
+        //Write list of saved data to file
+        string header = "Name of Frame, Time Reached(Milliseconds)";
+        sw.WriteLine(header);
+        foreach (var WorldSave in world)
+        {
+            line =  WorldSave.name + "," + WorldSave.timePlayerTouch;
+            sw.WriteLine(line);
+        }
+
+        sw.Flush();
+        sw.Close();
+    }
+
+    void OnApplicationQuit()
+    {
+        if (save) WriteFile();
     }
 }
 
