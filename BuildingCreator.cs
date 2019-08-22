@@ -45,6 +45,7 @@ public class BuildingCreator : MonoBehaviour
         public float timePlayerTouch;
     }
 
+    [SerializeField]
     bool save = true;
 
     [HideInInspector]
@@ -86,6 +87,10 @@ public class BuildingCreator : MonoBehaviour
 
     int cloudOffset = 300;
 
+        
+
+    //IEnumerator CoBuild;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -101,11 +106,15 @@ public class BuildingCreator : MonoBehaviour
         frameData = ReadFrameData(Application.dataPath+"/data.txt");
 
         Debug.Log(frameData.frameTypes[1].weight);
-
+        Debug.Log(frameData.frameTypes.Length);
         CreateBuilding(frameData);
+        //CoBuild = BuildMore();
+
 
         //Create empty frames to start off
-        Debug.Log("Frame length :" + frameLength);
+        //Debug.Log("Frame length :" + frameLength);
+
+        //rand = new System.Random();
 
         SpawnClouds();
     }
@@ -113,7 +122,7 @@ public class BuildingCreator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //CalculateWeight(frameData);
+        //CalculateWeight();
 
     }
 
@@ -208,7 +217,7 @@ public class BuildingCreator : MonoBehaviour
                     CreateFrame(frame, building);
 
                     i++;
-                    if (i == n) break;
+                    if (i >= n) break;
                 }
 
                 
@@ -311,7 +320,7 @@ public class BuildingCreator : MonoBehaviour
             framePiece = PlaceCollectibles(framePiece, f);
         }
 
-        if(spawnTrigger >= 10 ) //Once 10 frames are created, create a trigger to spawn another set when the player passes through
+        if(spawnTrigger >= 5 ) //Once 10 frames are created, create a trigger to spawn another set when the player passes through
         {
             Instantiate(buildingPrefabs[3], framePiece.transform.position, Quaternion.identity, framePiece.transform);
             framePiece.name += " /w Spawn Trigger";
@@ -329,19 +338,22 @@ public class BuildingCreator : MonoBehaviour
         //Deterministic? Called when $now reaches _____
 
         //Call CreateBuilding? Attatch to current Building gameobject
+        CreateBuilding(frameData, 20);
 
         //Creates more building while game runs in foreground
-        yield return new WaitForSeconds(.01f);
 
+        
+        yield return new WaitForSeconds(.01f);
+        //StopCoroutine(CoBuild);
     }
 
     //Calculates weight for all frames in the frameType object
     public void CalculateWeight()
     {
 
-        int num = 0;
+        //int num = 0;
         float freq, diff;       
-        foreach (Frame f in frameData.frameTypes)
+        for(int num = 0; num < frameData.frameTypes.Length; num++)
         {
             now = Time.time*1000; //In milliseconds
             diff = now - frameData.frameTypes[num].lastUsed;
@@ -350,19 +362,19 @@ public class BuildingCreator : MonoBehaviour
                 frameData.frameTypes[num].weight = -1;
                 Debug.Log("Calculated weight for " + frameData.frameTypes[num].name + " at " + frameData.frameTypes[num].weight);
                 num++;
-                return;
+                continue;
             }
             if ((frameData.frameTypes[num].frameCap > 0) && (diff > frameData.frameTypes[num].frameCap))
             {
                 frameData.frameTypes[num].weight = -1;
                 Debug.Log("Calculated weight for " + frameData.frameTypes[num].name + " at " + frameData.frameTypes[num].weight);
                 num++;
-                return;
+                continue;
             }
             freq = frameData.frameTypes[num].frequency - (float)(diff * frameData.frameTypes[num].frequencyDelta); //Check
-            frameData.frameTypes[num].weight = frameData.frameTypes[num].priority * diff + frameData.frameTypes[num].priority * freq * 0.00001f;
+            frameData.frameTypes[num].weight = (frameData.frameTypes[num].priority * diff) + (frameData.frameTypes[num].priority * freq * 0.00001f);
             Debug.Log("Calculated weight for " + frameData.frameTypes[num].name + " at " + frameData.frameTypes[num].weight);
-            num++;
+            //num++;
         }
 
         return;
@@ -378,6 +390,7 @@ public class BuildingCreator : MonoBehaviour
         Frame highest;
 
         int s = 0; //Tracks the spot in the array of the highest weight frame
+        int r;
         highest = frameData.frameTypes[0];
 
         //Searches the list of frames to find the highest weight
@@ -388,9 +401,18 @@ public class BuildingCreator : MonoBehaviour
 
             if (frameData.frameTypes[i].weight == highest.weight) // If the current frame's weight is equal to the highest, check priority
             {
-                if (frameData.frameTypes[i].priority <= highest.priority) continue;
-
-                highest = frameData.frameTypes[i]; s = i;
+                if (frameData.frameTypes[i].priority < highest.priority) continue;
+                if (frameData.frameTypes[i].priority > highest.priority)
+                {
+                    highest = frameData.frameTypes[i]; s = i;
+                    continue;
+                }
+               
+                if((int)(Random.value*100) > 35)
+                {
+                    highest = frameData.frameTypes[i]; s = i;
+                    continue;
+                }
                 continue;
             }
 
@@ -398,18 +420,25 @@ public class BuildingCreator : MonoBehaviour
 
         }
 
+        Debug.Log(frameData.frameTypes[s].name + " is the highest weight at " + frameData.frameTypes[s].weight);
         if (frameData.frameTypes[s].name == "gap")
         {
             for (int k = 0; k < frameData.frameTypes.Length; k++)
             {
-                if (frameData.frameTypes[k].name == "gap") frameData.frameTypes[k].lastUsed = Time.time*1000;
+                if (frameData.frameTypes[k].name == "gap")
+                {
+                    frameData.frameTypes[k].lastUsed = Time.time * 1000;
+                    frameData.frameTypes[k].weight = 0;
+                }
             }
 
         }
         else
         {
             frameData.frameTypes[s].lastUsed = Time.time*1000;
+            frameData.frameTypes[s].weight = 0;
         }
+        
         return highest;
     }
 
@@ -462,34 +491,36 @@ public class BuildingCreator : MonoBehaviour
         {
             switch (f.obstacles[i])
             {
+                case 0:
+                    break;
                 case 2: //power lines -- check if whole frame wide
-                    if(i+1 < 3) //Dont want an out of bounds error
-                    {
-                        if(f.obstacles[i+1] == 2) // Checks if the next spot is a powerline.
-                        {
-                            if(i+1 <3)
-                            {
-                                if(f.obstacles[i + 1] == 2) //Check the next
-                                {
-                                    //spawn a 3 wide powerline over the whole frame
-                                    //Instantiate(whatever it is)
-                                    //also break out the whole for loop with b, because nothing else can spawn
-                                    b = true;
-                                    break;
-                                }
-                            }
-                            //If it is just a 2 wide, spawn that
+                    //if(i+1 < 3) //Dont want an out of bounds error
+                    //{
+                    //    if(f.obstacles[i+1] == 2) // Checks if the next spot is a powerline.
+                    //    {
+                    //        if(i+1 <3)
+                    //        {
+                    //            if(f.obstacles[i + 1] == 2) //Check the next
+                    //            {
+                    //                //spawn a 3 wide powerline over the whole frame
+                    //                //Instantiate(whatever it is)
+                    //                //also break out the whole for loop with b, because nothing else can spawn
+                    //                b = true;
+                    //                break;
+                    //            }
+                    //        }
+                    //        //If it is just a 2 wide, spawn that
 
-                            break;
-                        }
-                        else //If not, spawn a single then break
-                        {
-                            Instantiate(obstaclePrefabs[0], Spot(i, g), Quaternion.identity, g.transform);
-                            break;
-                        }
+                    //        break;
+                    //    }
+                    //    else //If not, spawn a single then break
+                    //    {
+                    //        Instantiate(obstaclePrefabs[4], Spot(i, g), Quaternion.identity, g.transform);
+                    //        break;
+                    //    }
                         
-                    }
-                    Instantiate(obstaclePrefabs[0], Spot(i, g), Quaternion.identity, g.transform);
+                    //}
+                    Instantiate(obstaclePrefabs[4], (Spot(i, g) + new Vector3(0f, 3.5f, 0f)), Quaternion.identity, g.transform);
                     break;
                 case 3: //wall
 
@@ -498,17 +529,17 @@ public class BuildingCreator : MonoBehaviour
 
                 case 4: //Half Wall (Jump)
 
-                    Instantiate(obstaclePrefabs[3], (Spot(i, g) + new Vector3(0f, -.5f, 0f)), Quaternion.identity, g.transform);
+                    Instantiate(obstaclePrefabs[3], (Spot(i, g) + new Vector3(0f, 1f, 0f)), Quaternion.identity, g.transform);
                     break;
 
                 case 5: //Slide
 
-                    Instantiate(obstaclePrefabs[4], (Spot(i, g) + new Vector3(0f, 1.5f, 0f)), Quaternion.identity, g.transform);
+                    Instantiate(obstaclePrefabs[4], (Spot(i, g) + new Vector3(0f, 3.5f, 0f)), Quaternion.identity, g.transform);
                     break;
 
                 case 6: //Hurdle (Slide or Jump)
 
-                    Instantiate(obstaclePrefabs[5], (Spot(i, g) + new Vector3(0f, .5f, 0f)), Quaternion.identity, g.transform);
+                    Instantiate(obstaclePrefabs[5], (Spot(i, g) + new Vector3(0f, 2.5f, 0f)), Quaternion.identity, g.transform);
                     break;
 
                 default:
@@ -568,7 +599,12 @@ public class BuildingCreator : MonoBehaviour
 
     void OnTriggerEnter(Collider col)
     {
-        if (col.tag == "SpawnTrigger" && (numBuildings<MAX_BUILDINGS)) CreateBuilding(frameData, 20);
+        if (col.tag == "SpawnTrigger" && (numBuildings < MAX_BUILDINGS))
+        {
+            CreateBuilding(frameData, 20);
+            //StartCoroutine(CoBuild);
+            //BuildMore();
+        }
 
         if(col.tag == "Frame" && save)
         {

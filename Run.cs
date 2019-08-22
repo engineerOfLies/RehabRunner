@@ -15,7 +15,7 @@ public class Run : MonoBehaviour {
     Vector3 zVec, xVec, targVec, vel3, velStep, velZero;
     double score = 0;
 
-    [Range(0,3)]
+    [Range(3,20)]
     public float speed;
     public float thrust;
     [Range(0,5)]
@@ -42,9 +42,11 @@ public class Run : MonoBehaviour {
         public float timePerformed; //in milliseconds
         public string action; //the action (or collision) performed
     }
-
+    
+    [HideInInspector]
     public List<SaveData> saves;
 
+    [SerializeField]
     bool save = true; //Set to true to save data
     
 
@@ -76,7 +78,7 @@ public class Run : MonoBehaviour {
         //speedMod = (Time.deltaTime / 100000) + 1; //Too fast, change before reimplementing
 
         //Constantly moves the player forward, slowly increasing speed over time
-        zVec.z = (speed + speedMod);
+        zVec.z = (speed + speedMod)*Time.deltaTime;
         
         targVec.y = player.transform.position.y; //Keeps the y value the players
 
@@ -327,6 +329,7 @@ public class Run : MonoBehaviour {
         {
             //get points, add score, good jorb? GO FASTER??
             score += pointsPerBar;
+            SaveAction("Bar Collected");
             //def pickup noise, like uh... a 'brring' or somethin, yeah
             //oh and kill the bar
             Destroy(collision.gameObject);
@@ -335,6 +338,7 @@ public class Run : MonoBehaviour {
         {
             //get points, add score, good jorb? GO FASTER??
             score += pointsPerBar;
+            SaveAction("High Bar Collected");
             //def pickup noise, like uh... a 'brring' or somethin, yeah
             //oh and kill the bar
             Destroy(collision.gameObject);
