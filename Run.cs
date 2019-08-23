@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEngine.UI;
 using UnityEngine;
 
 
@@ -14,6 +15,7 @@ public class Run : MonoBehaviour {
     float speedMod, stumbleTimer, slideTimer, jumpTimer, pointsPerBar;
     Vector3 zVec, xVec, targVec, vel3, velStep, velZero;
     double score = 0;
+    int coins = 0;
 
     [Range(3,20)]
     public float speed;
@@ -48,7 +50,11 @@ public class Run : MonoBehaviour {
 
     [SerializeField]
     bool save = true; //Set to true to save data
-    
+
+    public Text coinText, copDist;
+    public Slider distanceTracker;
+    float dist = 0f;
+    public float distanceFromRobber;
 
 	// Use this for initialization
 	void Start ()
@@ -63,6 +69,9 @@ public class Run : MonoBehaviour {
 
         rend = bab.GetComponent<Renderer>();
         anim = bab.GetComponent<Animator>();
+
+        //coinText.text = "Coins: "+coins;
+        distanceTracker.maxValue = distanceFromRobber;
     }
 	
 	// Update is called once per frame
@@ -79,6 +88,8 @@ public class Run : MonoBehaviour {
 
         //Constantly moves the player forward, slowly increasing speed over time
         zVec.z = (speed + speedMod)*Time.deltaTime;
+
+        
         
         targVec.y = player.transform.position.y; //Keeps the y value the players
 
@@ -88,18 +99,22 @@ public class Run : MonoBehaviour {
             //player.transform.position -= zVec;
             //targVec.y += 1.8f; // >:(
         }
-        
+
+        coinText.text = "Coins: " + coins;
+        distanceTracker.value = dist;
+        copDist.text = System.Math.Round((distanceFromRobber - dist), 2) + " m";
 
         //Debug.Log(stumbleTimer);
 
-        if(stumbleTimer>0)
+        if (stumbleTimer>0)
         {
             //zVec.z = zVec.z * .5f;
             stumbleTimer -= Time.deltaTime;
         }
         else
         {
-            rend.material.color = Color.gray;
+            //rend.material.color = Color.gray;
+            dist+= Time.deltaTime;
         }
 
         if (slideTimer > 0)
@@ -330,8 +345,11 @@ public class Run : MonoBehaviour {
             //get points, add score, good jorb? GO FASTER??
             score += pointsPerBar;
             SaveAction("Bar Collected");
+            coins++;
+            
             //def pickup noise, like uh... a 'brring' or somethin, yeah
             //oh and kill the bar
+
             Destroy(collision.gameObject);
         }
         else if (collision.gameObject.tag == "GoldBarHigh" && jumping)
@@ -339,6 +357,7 @@ public class Run : MonoBehaviour {
             //get points, add score, good jorb? GO FASTER??
             score += pointsPerBar;
             SaveAction("High Bar Collected");
+            coins++;
             //def pickup noise, like uh... a 'brring' or somethin, yeah
             //oh and kill the bar
             Destroy(collision.gameObject);
