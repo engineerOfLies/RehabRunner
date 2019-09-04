@@ -47,9 +47,21 @@ public class BuildingCreator : MonoBehaviour
 
     [SerializeField]
     bool save = true;
+    [SerializeField]
+    bool json = true;
 
     [HideInInspector]
     public List<WorldSave> world;
+
+    [HideInInspector]
+    [System.Serializable]
+    public struct WorldStruct
+    {
+        public List<WorldSave> worlds;
+    }
+
+    [HideInInspector]
+    public WorldStruct jsonData;
 
     [HideInInspector]
     public static FrameTypes frameData;
@@ -87,13 +99,29 @@ public class BuildingCreator : MonoBehaviour
 
     int cloudOffset = 300;
 
-        
+    [HideInInspector]
+    public string fileSaveLocation;
+    [HideInInspector]
+    public string configFilePath;
 
     //IEnumerator CoBuild;
 
     // Start is called before the first frame update
     void Start()
     {
+        #region PlayerPrefs Loading
+
+        if (PlayerPrefs.GetInt("Save?", 1) > 0) save = true;
+        else save = false;
+
+        if (PlayerPrefs.GetInt("SaveAsJson?", 1) > 0) json = true;
+        else json = false;
+
+        fileSaveLocation = PlayerPrefs.GetString("SaveDataLocation", "");
+
+        configFilePath = PlayerPrefs.GetString("WorldConfig", "");
+        #endregion
+
         origin.Set(0, -1.57f, -(frameLength/2));
         fabScale.Set((float)laneWidth, 1f, (float)frameLength);
 
@@ -103,13 +131,21 @@ public class BuildingCreator : MonoBehaviour
         lastFramePos = origin;
         //FrameTypes frameData;
 
-        frameData = ReadFrameData(Application.dataPath+"/data.txt");
+        if (configFilePath != "")
+        {
+            frameData = ReadFrameData(configFilePath);
+        }
+        else
+        {
+            frameData = ReadFrameData(Application.dataPath + "/data.txt");
+        }
 
         Debug.Log(frameData.frameTypes[1].weight);
         Debug.Log(frameData.frameTypes.Length);
         CreateBuilding(frameData);
         //CoBuild = BuildMore();
 
+        
 
         //Create empty frames to start off
         //Debug.Log("Frame length :" + frameLength);
@@ -608,34 +644,53 @@ public class BuildingCreator : MonoBehaviour
 
         if(col.tag == "Frame" && save)
         {
-            world.Add(new WorldSave() {name = col.gameObject.name, timePlayerTouch = Time.time*1000f});
+            if (!json)
+            {
+                world.Add(new WorldSave() { name = col.gameObject.name, timePlayerTouch = Time.time * 1000f });
+            }
+            else
+            {
+                jsonData.worlds.Add(new WorldSave() { name = col.gameObject.name, timePlayerTouch = Time.time * 1000f });
+            }
         }
     }
 
     void WriteFile()
     {
+        string ext;              
         bool c = true;
         int i = 1;
         string fileName = "t", line;
 
+        ext = (json) ? ".txt" : ".csv";
+
         while (c)
         {
-            fileName = "WorldData" + i + ".csv";
+            fileName = "WorldData" + i + ext;
             if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
             else c = false;
         }
-        StreamWriter sw = new StreamWriter(fileName);
-        //Write list of saved data to file
-        string header = "Name of Frame, Time Reached(Milliseconds)";
-        sw.WriteLine(header);
-        foreach (var WorldSave in world)
+        StreamWriter sw = new StreamWriter(fileSaveLocation+fileName);
+        if (!json)
         {
-            line =  WorldSave.name + "," + WorldSave.timePlayerTouch;
-            sw.WriteLine(line);
+            //Write list of saved data to file
+            string header = "Name of Frame, Time Reached(Milliseconds)";
+            sw.WriteLine(header);
+            foreach (var WorldSave in world)
+            {
+                line = WorldSave.name + "," + WorldSave.timePlayerTouch;
+                sw.WriteLine(line);
+            }
         }
+        else
+        {
+            sw.Write(JsonUtility.ToJson(jsonData));
+        }
+
 
         sw.Flush();
         sw.Close();
+        
     }
 
     void OnApplicationQuit()

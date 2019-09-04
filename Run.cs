@@ -48,17 +48,45 @@ public class Run : MonoBehaviour {
     [HideInInspector]
     public List<SaveData> saves;
 
+    [System.Serializable]
+    public struct SaveDataJson
+    {
+        public List<SaveData> savess;
+    }
+    [HideInInspector]
+    public SaveDataJson saveDataJson;
+
     [SerializeField]
     bool save = true; //Set to true to save data
+    [SerializeField]
+    bool json = true;
 
     public Text coinText, copDist;
     public Slider distanceTracker;
     float dist = 0f;
     public float distanceFromRobber;
 
+    [HideInInspector]
+    public string fileSaveLocation;
+
 	// Use this for initialization
 	void Start ()
     {
+        #region PlayerPref Loading
+
+        if (PlayerPrefs.GetInt("Save?", 1) > 0) save = true;
+        else save = false;
+
+        if (PlayerPrefs.GetInt("SaveAsJson?", 1) > 0) json = true;
+        else json = false;
+
+        if (PlayerPrefs.GetInt("EndlessMode?", 0) > 0) ; //Do something with endless mode
+        else;
+
+        fileSaveLocation = PlayerPrefs.GetString("SaveDataLocation", "");
+
+        #endregion
+
         bab = this.gameObject.transform.GetChild(0).gameObject;
 
         xVec.Set(strafeDistance, 0, 0);
@@ -177,6 +205,12 @@ public class Run : MonoBehaviour {
             //sliding = true;
             //slideTimer = slideTimerSet;
         }
+
+
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
         
 	}
 
@@ -184,7 +218,14 @@ public class Run : MonoBehaviour {
     {
         if (save)
         {
-            saves.Add(new SaveData() { timePerformed = Time.time * 1000f, action = s });
+            if (!json)
+            {
+                saves.Add(new SaveData() { timePerformed = Time.time * 1000f, action = s });
+            }
+            else
+            {
+                saveDataJson.savess.Add(new SaveData() { timePerformed = Time.time * 1000f, action = s });
+            }
         }
     }
 
@@ -192,11 +233,11 @@ public class Run : MonoBehaviour {
     {
         if(!rightLane)
         {
+            SaveAction("Move Right");
+
             targVec += xVec;
             if (leftLane) leftLane = false; //If the player is in the left lane, set left to false and dont change right
-            else rightLane = true; //Otherwise, the player must be entering the right lane
-
-            SaveAction("Move Right");
+            else rightLane = true; //Otherwise, the player must be entering the right lane            
         }
     }
 
@@ -204,11 +245,11 @@ public class Run : MonoBehaviour {
     {
         if(!leftLane)
         {
+            SaveAction("Move Left");
+
             targVec -= xVec;
             if (rightLane) rightLane = false; // vice versa
-            else leftLane = true;
-
-            SaveAction("Move Left");
+            else leftLane = true;           
         }
     }
 
@@ -374,22 +415,32 @@ public class Run : MonoBehaviour {
     {
         bool c = true;
         int i = 1;
-        string fileName = "t", line;
+        string fileName = "t", line, ext;
+
+        ext = (json) ? ".txt" : ".csv";
 
         while (c)
         {
-            fileName = "ActionData" + i + ".csv";
+            fileName = "ActionData" + i + ext;
             if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
             else c = false;
         }
-        StreamWriter sw = new StreamWriter(fileName);
-        //Write list of saved data to file
-        string header = "Time(Milliseconds),Action";
-        sw.WriteLine(header);
-        foreach (var SaveData in saves)
+        StreamWriter sw = new StreamWriter(fileSaveLocation+fileName);
+
+        if (!json)
         {
-            line = SaveData.timePerformed + "," + SaveData.action;
-            sw.WriteLine(line);
+            //Write list of saved data to file
+            string header = "Time(Milliseconds),Action,Lane";
+            sw.WriteLine(header);
+            foreach (var SaveData in saves)
+            {
+                line = SaveData.timePerformed + "," + SaveData.action;
+                sw.WriteLine(line);
+            }
+        }
+        else
+        {
+            sw.Write(JsonUtility.ToJson(saveDataJson));
         }
 
         sw.Flush();
