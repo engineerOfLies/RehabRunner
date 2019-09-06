@@ -505,15 +505,15 @@ public class BuildingCreator : MonoBehaviour
         }
         if (f.collectables[3] != 0)
         {
-            Instantiate(buildingPrefabs[5], new Vector3(-collectibleXOffset, collectibleHeightOffset+2f, center), Quaternion.identity, g.transform);
+            Instantiate(buildingPrefabs[5], new Vector3(-collectibleXOffset, collectibleHeightOffset+3f, center), Quaternion.identity, g.transform);
         }
         if (f.collectables[4] != 0)
         {
-            Instantiate(buildingPrefabs[5], new Vector3(0, collectibleHeightOffset+2f, center), Quaternion.identity, g.transform);
+            Instantiate(buildingPrefabs[5], new Vector3(0, collectibleHeightOffset+3f, center), Quaternion.identity, g.transform);
         }
         if (f.collectables[5] != 0)
         {
-            Instantiate(buildingPrefabs[5], new Vector3(collectibleXOffset, collectibleHeightOffset+2f, center), Quaternion.identity, g.transform);
+            Instantiate(buildingPrefabs[5], new Vector3(collectibleXOffset, collectibleHeightOffset+3f, center), Quaternion.identity, g.transform);
         }
 
         return g;
@@ -664,12 +664,14 @@ public class BuildingCreator : MonoBehaviour
 
         ext = (json) ? ".txt" : ".csv";
 
-        while (c)
-        {
-            fileName = "WorldData" + i + ext;
-            if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
-            else c = false;
-        }
+        string dateTime = System.DateTime.UtcNow.ToString("HH-mm-ss--dd-MMMM-yyyy");
+
+        //while (c)
+        //{
+            fileName = "/WorldData" + dateTime + ext;
+            //if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
+            //else c = false;
+        //}
         StreamWriter sw = new StreamWriter(fileSaveLocation+fileName);
         if (!json)
         {

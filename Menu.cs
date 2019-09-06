@@ -10,9 +10,16 @@ using UnityEditor;
 public class Menu : MonoBehaviour
 {
     public Button playButton;
+    public Button optionButton;
+    RectTransform homePanel;
+    bool move = false;
+    Vector3 t1, t2; //Target 1 and 2, for moving the panels
+    bool b1 = true, b2 = true;
     public Button quitButton;
 
     #region Options
+    public RectTransform optionPanel;
+
     public Toggle saveDataToggle; //Save World and Play Data
 
     public Toggle endlessModeToggle; //Toggle to enable endless run mode 
@@ -24,12 +31,21 @@ public class Menu : MonoBehaviour
     public Button fileSelectorButton;
    
     public Slider audioVolumeSlider; //Slider to adjust audio volume
+
+    public Button confirmOptionsButton;
     #endregion
+
+    //IEnumerator moveOptions;
 
     // Start is called before the first frame update
     void Start()
     {
+        
+        homePanel = optionButton.transform.parent.GetComponent<RectTransform>();
+
         playButton.onClick.AddListener(LoadGame);
+
+        optionButton.onClick.AddListener(MoveToOptions);
 
         quitButton.onClick.AddListener(QuitGame);
 
@@ -46,20 +62,70 @@ public class Menu : MonoBehaviour
         //fileSelectorButton.transform.GetChild(1).gameObject.GetComponent<Text>().text = Application.dataPath;
 
         audioVolumeSlider.onValueChanged.AddListener(ChangeVolume);
+
+        confirmOptionsButton.onClick.AddListener(MoveToOptions);
         #endregion
+
+        t1 = homePanel.position;
+        t2 = optionPanel.position;
     }
 
     // Update is called once per frame
     void Update()
     {
         
+        if(move)
+        {
+            float x = 0;
+            x += Time.deltaTime;
+            homePanel.position = Vector3.MoveTowards(homePanel.position, t1, (Mathf.Abs(homePanel.position.x - t1.x)/8));
+            optionPanel.position = Vector3.MoveTowards(optionPanel.position, t2, (Mathf.Abs(optionPanel.position.x - t2.x) / 8));
 
+            if (x > 2)
+            {
+                move = false;
+                x = 0f;
+            }
+        }
     }
 
     public void LoadGame()
     {
         SceneManager.LoadScene("NewStuff", LoadSceneMode.Single);
     }
+
+    public void MoveToOptions()
+    {
+        //  -(x - 1) ^ 2 + 1
+        if(b1)
+        {
+            t1 += new Vector3(-1200f, 0f, 0f);
+            b1 = false;
+        }else
+        {
+            t1 += new Vector3(1200f, 0f, 0f);
+            b1 = true;
+        }
+
+        if(b2)
+        {
+            t2 += new Vector3(-1200f, 0f, 0f);
+            b2 = false;
+        }
+        else
+        {
+            t2 += new Vector3(1200f, 0f, 0f);
+            b2 = true;
+        }              
+        move = true;
+    }
+    
+    //IEnumerator MoveOptions()
+    //{
+        
+        
+    //    yield return null; 
+    //}
 
     public void QuitGame()
     {

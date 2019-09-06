@@ -295,7 +295,7 @@ public class Run : MonoBehaviour {
         rend.material.color = Color.red;
         //call stumble animation also
         //slow speed after?
-
+        anim.Play("Stumble", 0, 0f);
         SaveAction("Stumble"); //Player hit something
     }
 
@@ -419,12 +419,14 @@ public class Run : MonoBehaviour {
 
         ext = (json) ? ".txt" : ".csv";
 
-        while (c)
-        {
-            fileName = "ActionData" + i + ext;
-            if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
-            else c = false;
-        }
+        string dateTime = System.DateTime.UtcNow.ToString("HH-mm-ss--dd-MMMM-yyyy");
+
+        //while (c)
+        //{
+            fileName = "/ActionData" + dateTime + ext;
+        //    if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
+        //    else c = false;
+        //}
         StreamWriter sw = new StreamWriter(fileSaveLocation+fileName);
 
         if (!json)
