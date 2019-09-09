@@ -1,10 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using UnityEditor;
+using UnityEngine.EventSystems;
+using SFB;
+//using UnityEditor;
 
 
 public class Menu : MonoBehaviour
@@ -34,6 +38,20 @@ public class Menu : MonoBehaviour
 
     public Button confirmOptionsButton;
     #endregion
+
+    //struct
+    [System.Serializable]
+    public struct Profile
+    {
+        public string name;
+        public string saveDirectory; // pathS
+        public string configData; //path
+        public bool saveWorldPlayData;
+        public bool saveAsJson;
+        public float volume;
+    }
+
+    Profile defaultProfile;
 
     //IEnumerator moveOptions;
 
@@ -68,6 +86,15 @@ public class Menu : MonoBehaviour
 
         t1 = homePanel.position;
         t2 = optionPanel.position;
+
+        #region Default Profile Setup
+        defaultProfile.name = "Default Profile";
+        defaultProfile.saveDirectory = Application.dataPath;
+        defaultProfile.configData = Application.dataPath+"/data.txt";
+        defaultProfile.saveWorldPlayData = true;
+        defaultProfile.saveAsJson = false;
+        defaultProfile.volume = .70f;
+        #endregion
     }
 
     // Update is called once per frame
@@ -157,21 +184,32 @@ public class Menu : MonoBehaviour
 
     public void SaveLocation()
     {
-        string pathS;
-        pathS = EditorUtility.OpenFolderPanel("Choose folder to save data", Application.dataPath, "");
-        PlayerPrefs.SetString("SaveDataLocation", pathS);
+        string[] pathS = new string[1];
+        pathS = StandaloneFileBrowser.OpenFolderPanel("Choose folder to save data", Application.dataPath, false);
+        if(pathS.Length>0)PlayerPrefs.SetString("SaveDataLocation", pathS[0]);
     }
 
     public void FileSelector()
     {
-        string path;
-        path = EditorUtility.OpenFilePanel("Choose file", Application.dataPath, "txt");
-        PlayerPrefs.SetString("WorldConfig", path);
+        string[] path = new string[1];
+        path = StandaloneFileBrowser.OpenFilePanel("Choose file", Application.dataPath, "txt", false);
+        if (path.Length > 0) PlayerPrefs.SetString("WorldConfig", path[0]);
     }
 
     public void ChangeVolume(float f)
     {
         Debug.Log(f);
+    }
+
+    public Profile LoadProfile()
+    {
+        //If the function cant find anything
+        return defaultProfile;
+    }
+
+    public void SaveProfile()
+    {
+
     }
 }
 
