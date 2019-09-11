@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -37,6 +38,12 @@ public class Menu : MonoBehaviour
     public Slider audioVolumeSlider; //Slider to adjust audio volume
 
     public Button confirmOptionsButton;
+
+    public Button loadProfileButton;
+
+    public Button createProfileButton;
+
+    public InputField createProfileInput;
     #endregion
 
     //struct
@@ -50,8 +57,10 @@ public class Menu : MonoBehaviour
         public bool saveAsJson;
         public float volume;
     }
-
+    Text profileName;
     Profile defaultProfile;
+
+    public Profile currentProfile;
 
     //IEnumerator moveOptions;
 
@@ -81,7 +90,13 @@ public class Menu : MonoBehaviour
 
         audioVolumeSlider.onValueChanged.AddListener(ChangeVolume);
 
-        confirmOptionsButton.onClick.AddListener(MoveToOptions);
+        confirmOptionsButton.onClick.AddListener(ConfirmOptions);
+
+        loadProfileButton.onClick.AddListener(LoadProfile);
+
+        createProfileInput.onEndEdit.AddListener(CreateProfile);
+        profileName = createProfileInput.transform.parent.GetComponent<Text>();
+        
         #endregion
 
         t1 = homePanel.position;
@@ -95,6 +110,8 @@ public class Menu : MonoBehaviour
         defaultProfile.saveAsJson = false;
         defaultProfile.volume = .70f;
         #endregion
+
+        currentProfile = defaultProfile;
     }
 
     // Update is called once per frame
@@ -165,6 +182,7 @@ public class Menu : MonoBehaviour
         if (b) i = 1;
         else i = 0;
         PlayerPrefs.SetInt("Save?", i);
+        currentProfile.saveWorldPlayData = b;
     }
 
     public void EndlessModeToggle(bool e)
@@ -172,6 +190,7 @@ public class Menu : MonoBehaviour
         int j;
         j = (e) ? 1 : 0; //If (e), set j to 1, else set j to 0
         PlayerPrefs.SetInt("EndlessMode?", j);
+        
 
     }
 
@@ -180,6 +199,7 @@ public class Menu : MonoBehaviour
         int k;
         k = (n) ? 1 : 0;
         PlayerPrefs.SetInt("SaveAsJson?", k);
+        currentProfile.saveAsJson = n;
     }
 
     public void SaveLocation()
@@ -187,6 +207,8 @@ public class Menu : MonoBehaviour
         string[] pathS = new string[1];
         pathS = StandaloneFileBrowser.OpenFolderPanel("Choose folder to save data", Application.dataPath, false);
         if(pathS.Length>0)PlayerPrefs.SetString("SaveDataLocation", pathS[0]);
+
+        currentProfile.saveDirectory = pathS[0];
     }
 
     public void FileSelector()
@@ -194,22 +216,51 @@ public class Menu : MonoBehaviour
         string[] path = new string[1];
         path = StandaloneFileBrowser.OpenFilePanel("Choose file", Application.dataPath, "txt", false);
         if (path.Length > 0) PlayerPrefs.SetString("WorldConfig", path[0]);
+
+        currentProfile.configData = path[0];
     }
 
     public void ChangeVolume(float f)
     {
         Debug.Log(f);
+        currentProfile.volume = f;
     }
 
-    public Profile LoadProfile()
+    public void LoadProfile()
     {
+        string[] jsonPath = new string[1];
+        //string jStr;
+        jsonPath = StandaloneFileBrowser.OpenFilePanel("Select profile to load", Application.dataPath, ".json", false);
+        if(jsonPath.Length>0)
+        {
+            currentProfile = JsonUtility.FromJson<Profile>(jsonPath[0]);
+        }
+
+        profileName.text = "Profile: " + currentProfile.name;
         //If the function cant find anything
-        return defaultProfile;
+        //return defaultProfile;
+    }
+
+    public void CreateProfile(string s)
+    {
+        currentProfile.name = s;
+        profileName.text = "Profile: "+currentProfile.name;
     }
 
     public void SaveProfile()
     {
+        string json;
+        json = JsonUtility.ToJson(currentProfile);
+        StreamWriter sw = new StreamWriter(Application.dataPath+"/"+currentProfile.name+".json");
+        sw.Write(json);
+        sw.Flush();  sw.Close(); 
+    }
 
+    public void ConfirmOptions()
+    {
+        //save json
+        SaveProfile();
+        MoveToOptions();
     }
 }
 
