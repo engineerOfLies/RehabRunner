@@ -220,11 +220,11 @@ public class Run : MonoBehaviour {
         {
             if (!json)
             {
-                saves.Add(new SaveData() { timePerformed = Time.time * 1000f, action = s });
+                saves.Add(new SaveData() { timePerformed = Time.timeSinceLevelLoad * 1000f, action = s });
             }
             else
             {
-                saveDataJson.savess.Add(new SaveData() { timePerformed = Time.time * 1000f, action = s });
+                saveDataJson.savess.Add(new SaveData() { timePerformed = Time.timeSinceLevelLoad * 1000f, action = s });
             }
         }
     }

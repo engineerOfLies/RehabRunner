@@ -192,7 +192,7 @@ public class BuildingCreator : MonoBehaviour
 
             //Sort for the heightest weight
             frame = HighestWeightFrame();
-            frame.lastUsed = Time.time;
+            frame.lastUsed = Time.timeSinceLevelLoad;
 
             //Call CreateFrame to make each piece based on the Frame's data
             if (frame.repeat > 0)
@@ -274,7 +274,7 @@ public class BuildingCreator : MonoBehaviour
 
     public GameObject CreateFrame(Frame f, GameObject parent) //Actually build the frame using prefabs and other assets
     {
-        f.lastUsed = Time.time;
+        f.lastUsed = Time.timeSinceLevelLoad;
         Vector3 sVec;
         sVec = lastFrame.transform.position;
         sVec.z += frameLength;
@@ -391,7 +391,7 @@ public class BuildingCreator : MonoBehaviour
         float freq, diff;       
         for(int num = 0; num < frameData.frameTypes.Length; num++)
         {
-            now = Time.time*1000; //In milliseconds
+            now = Time.timeSinceLevelLoad * 1000; //In milliseconds
             diff = now - frameData.frameTypes[num].lastUsed;
             if (diff < frameData.frameTypes[num].frameDelay)
             {
@@ -471,7 +471,7 @@ public class BuildingCreator : MonoBehaviour
         }
         else
         {
-            frameData.frameTypes[s].lastUsed = Time.time*1000;
+            frameData.frameTypes[s].lastUsed = Time.timeSinceLevelLoad * 1000;
             frameData.frameTypes[s].weight = 0;
         }
         
@@ -646,11 +646,11 @@ public class BuildingCreator : MonoBehaviour
         {
             if (!json)
             {
-                world.Add(new WorldSave() { name = col.gameObject.name, timePlayerTouch = Time.time * 1000f });
+                world.Add(new WorldSave() { name = col.gameObject.name, timePlayerTouch = Time.timeSinceLevelLoad * 1000f });
             }
             else
             {
-                jsonData.worlds.Add(new WorldSave() { name = col.gameObject.name, timePlayerTouch = Time.time * 1000f });
+                jsonData.worlds.Add(new WorldSave() { name = col.gameObject.name, timePlayerTouch = Time.timeSinceLevelLoad * 1000f });
             }
         }
     }

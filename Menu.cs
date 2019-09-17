@@ -230,10 +230,10 @@ public class Menu : MonoBehaviour
     {
         string[] jsonPath = new string[1];
         //string jStr;
-        jsonPath = StandaloneFileBrowser.OpenFilePanel("Select profile to load", Application.dataPath, ".json", false);
+        jsonPath = StandaloneFileBrowser.OpenFilePanel("Select profile to load", Application.dataPath, "json", false);
         if(jsonPath.Length>0)
         {
-            currentProfile = JsonUtility.FromJson<Profile>(jsonPath[0]);
+            JsonUtility.FromJsonOverwrite(jsonPath[0], currentProfile);
         }
 
         profileName.text = "Profile: " + currentProfile.name;
@@ -243,8 +243,11 @@ public class Menu : MonoBehaviour
 
     public void CreateProfile(string s)
     {
-        currentProfile.name = s;
-        profileName.text = "Profile: "+currentProfile.name;
+        if (s != "")
+        {
+            currentProfile.name = s;
+            profileName.text = "Profile: " + currentProfile.name;
+        }
     }
 
     public void SaveProfile()
