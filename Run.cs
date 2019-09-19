@@ -69,6 +69,8 @@ public class Run : MonoBehaviour {
     [HideInInspector]
     public string fileSaveLocation;
 
+    string playerName;
+
 	// Use this for initialization
 	void Start ()
     {
@@ -85,6 +87,7 @@ public class Run : MonoBehaviour {
 
         fileSaveLocation = PlayerPrefs.GetString("SaveDataLocation", "");
 
+        playerName = PlayerPrefs.GetString("PlayerName", "");
         #endregion
 
         bab = this.gameObject.transform.GetChild(0).gameObject;
@@ -423,7 +426,7 @@ public class Run : MonoBehaviour {
 
         //while (c)
         //{
-            fileName = "/ActionData" + dateTime + ext;
+            fileName = "/ActionData "+playerName+ " " + dateTime + ext;
         //    if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
         //    else c = false;
         //}

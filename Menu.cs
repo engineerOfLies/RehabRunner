@@ -67,6 +67,7 @@ public class Menu : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        profileName.text = PlayerPrefs.GetString("PlayerName", "Default");
         
         homePanel = optionButton.transform.parent.GetComponent<RectTransform>();
 
@@ -103,7 +104,7 @@ public class Menu : MonoBehaviour
         t2 = optionPanel.position;
 
         #region Default Profile Setup
-        defaultProfile.name = "Default Profile";
+        defaultProfile.name = "Default";
         defaultProfile.saveDirectory = Application.dataPath;
         defaultProfile.configData = Application.dataPath+"/data.txt";
         defaultProfile.saveWorldPlayData = true;
@@ -266,6 +267,7 @@ public class Menu : MonoBehaviour
     public void ConfirmOptions()
     {
         //save json
+        PlayerPrefs.SetString("PlayerName", currentProfile.name);
         SaveProfile();
         MoveToOptions();
     }

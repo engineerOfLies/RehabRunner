@@ -104,6 +104,8 @@ public class BuildingCreator : MonoBehaviour
     [HideInInspector]
     public string configFilePath;
 
+    string playerName;
+
     //IEnumerator CoBuild;
 
     // Start is called before the first frame update
@@ -120,6 +122,8 @@ public class BuildingCreator : MonoBehaviour
         fileSaveLocation = PlayerPrefs.GetString("SaveDataLocation", "");
 
         configFilePath = PlayerPrefs.GetString("WorldConfig", "");
+
+        playerName = PlayerPrefs.GetString("PlayerName", "");
         #endregion
 
         origin.Set(0, -1.57f, -(frameLength/2));
@@ -668,7 +672,7 @@ public class BuildingCreator : MonoBehaviour
 
         //while (c)
         //{
-            fileName = "/WorldData" + dateTime + ext;
+            fileName = "/WorldData "+playerName+ " " + dateTime + ext;
             //if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
             //else c = false;
         //}
