@@ -229,11 +229,15 @@ public class Menu : MonoBehaviour
     public void LoadProfile()
     {
         string[] jsonPath = new string[1];
-        //string jStr;
+        string jStr;
         jsonPath = StandaloneFileBrowser.OpenFilePanel("Select profile to load", Application.dataPath, "json", false);
         if(jsonPath.Length>0)
         {
-            JsonUtility.FromJsonOverwrite(jsonPath[0], currentProfile);
+            Debug.Log(jsonPath[0]);
+            StreamReader sr = new StreamReader(jsonPath[0]);
+            jStr = sr.ReadToEnd();
+            currentProfile = JsonUtility.FromJson<Profile>(jStr);
+            sr.Close();
         }
 
         profileName.text = "Profile: " + currentProfile.name;
