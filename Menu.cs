@@ -134,11 +134,17 @@ public class Menu : MonoBehaviour
         }
     }
 
+    /**
+     *  @brief Loads the main game scene
+     */
     public void LoadGame()
     {
         SceneManager.LoadScene("NewStuff", LoadSceneMode.Single);
     }
 
+    /**
+     *  @brief Moves the home menu aside and brings the option menu into view, and vice versa
+     */
     public void MoveToOptions()
     {
         //  -(x - 1) ^ 2 + 1
@@ -164,19 +170,27 @@ public class Menu : MonoBehaviour
         }              
         move = true;
     }
-    
+
     //IEnumerator MoveOptions()
     //{
-        
-        
+
+
     //    yield return null; 
     //}
 
+    /**
+     *  @brief Closes the application (Does not work in editor)
+     */
     public void QuitGame()
     {
         Application.Quit();
     }
 
+    /**
+     * @brief Option whether or not to save world and play data
+     * 
+     * @param true = save, false = do not save
+     */
     public void SaveWorldPlayData(bool b)
     {
         int i;
@@ -186,6 +200,11 @@ public class Menu : MonoBehaviour
         currentProfile.saveWorldPlayData = b;
     }
 
+    /**
+     * @brief Option whether or not to turn on endless mode (doesnt spawn robber to catch)
+     * 
+     * @param true = endless mode on, false = endless mode off
+     */
     public void EndlessModeToggle(bool e)
     {
         int j;
@@ -195,6 +214,11 @@ public class Menu : MonoBehaviour
 
     }
 
+    /**
+     * @brief Option whether or not to save data as csv or json
+     * 
+     * @param true = save as json, false = save as csv
+     */
     public void SaveAsJson(bool n)
     {
         int k;
@@ -203,6 +227,9 @@ public class Menu : MonoBehaviour
         currentProfile.saveAsJson = n;
     }
 
+    /**
+     *  @brief Function to open file browser to select location to save world and play data to
+     */
     public void SaveLocation()
     {
         string[] pathS = new string[1];
@@ -212,6 +239,9 @@ public class Menu : MonoBehaviour
         currentProfile.saveDirectory = pathS[0];
     }
 
+    /**
+     *  @brief Function to select which file to use to generate frame data
+     */
     public void FileSelector()
     {
         string[] path = new string[1];
@@ -221,12 +251,20 @@ public class Menu : MonoBehaviour
         currentProfile.configData = path[0];
     }
 
+    /**
+     *  @brief Function that works with slider to change volume of game audio
+     *  
+     *  @param volume of game (0 = mute, 1 = full volume)
+     */
     public void ChangeVolume(float f)
     {
         Debug.Log(f);
         currentProfile.volume = f;
     }
 
+    /**
+     *  @brief Loads a json file of a pre existing profile
+     */
     public void LoadProfile()
     {
         string[] jsonPath = new string[1];
@@ -246,6 +284,11 @@ public class Menu : MonoBehaviour
         //return defaultProfile;
     }
 
+    /**
+     *  @brief Creates a profile using the string provided
+     * 
+     *  @param name of profile created
+     */
     public void CreateProfile(string s)
     {
         if (s != "")
@@ -255,6 +298,9 @@ public class Menu : MonoBehaviour
         }
     }
 
+    /**
+     *  @brief Saves profile to json file
+     */
     public void SaveProfile()
     {
         string json;
@@ -264,6 +310,9 @@ public class Menu : MonoBehaviour
         sw.Flush();  sw.Close(); 
     }
 
+    /**
+     *  @brief Function that calls SaveProfile and MoveToOptions
+     */
     public void ConfirmOptions()
     {
         //save json

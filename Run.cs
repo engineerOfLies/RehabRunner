@@ -169,21 +169,16 @@ public class Run : MonoBehaviour {
 
 
 
-        //Adds horizontal commands to the target position if inputed
-        //CHANGE TO SET POSITIONS--LESS ROOM FOR ERROR
+        //Checks for input, then moves the player if true
         if (Input.GetKeyDown(KeyCode.RightArrow) && !rightLane)
         {
             MoveRight();
-            //targVec += xVec;
-            //if (leftLane) leftLane = false; //If the player is in the left lane, set left to false and dont change right
-            //else rightLane = true; //Otherwise, the player must be entering the right lane
+
         }
         else if (Input.GetKeyDown(KeyCode.LeftArrow) && !leftLane)
         {
             MoveLeft();
-            //targVec -= xVec;
-            //if (rightLane) rightLane = false; // vice versa
-            //else leftLane = true; 
+
         }
 
         //Moves the player position to the target position (potentially change)
@@ -217,6 +212,11 @@ public class Run : MonoBehaviour {
         
 	}
 
+    /**
+     *  @brief Saves the current time along with the action inputted (or stumble)
+     * 
+     *  @param name of action performed
+     */
     public void SaveAction(string s) //Saves current time with action inputted 
     {
         if (save)
@@ -232,6 +232,9 @@ public class Run : MonoBehaviour {
         }
     }
 
+    /**
+     *  @brief Moves the player right, allows for multiple input methods
+     */
     public void MoveRight()
     {
         if(!rightLane)
@@ -244,6 +247,9 @@ public class Run : MonoBehaviour {
         }
     }
 
+    /**
+     *  @brief Moves the player left, allows for multiple input methods
+     */
     public void MoveLeft()
     {
         if(!leftLane)
@@ -256,6 +262,9 @@ public class Run : MonoBehaviour {
         }
     }
 
+    /**
+     *  @brief Makes the player jump, raising their hitbox and ignoring ground obstacles (Hurdle, HalfWall, and Gap type obstacles)
+     */
     public void Jump()
     {
         if (!jumping)
@@ -271,6 +280,9 @@ public class Run : MonoBehaviour {
         }
     }
 
+    /**
+     *  @brief Makes the player slide, ignoring mid obstacles (Slide and Hurdle type obstacles)
+     */
     public void Slide()
     {
         if (!sliding && !jumping)
@@ -291,7 +303,9 @@ public class Run : MonoBehaviour {
 
     }
 
-    //Player stumbles over an obstacle and slows down for a moment
+    /*
+     * @brief Player stumbles over an obstacle, plays animation and calls SaveAction
+     */
     public void Stumble()
     {
         stumbleTimer = stumbleTimerSet;
@@ -319,6 +333,12 @@ public class Run : MonoBehaviour {
             climbing = false;
         }
     }
+
+    /**
+     *  Unity Function
+     *  
+     *  Checks when colliding with different object types, then stumbles or increases score accordingly
+     */
     void OnCollisionEnter(Collision collision)
     {
 
@@ -339,6 +359,12 @@ public class Run : MonoBehaviour {
         }
         else;
     }
+
+    /**
+     *  Unity Function
+     *  
+     *  Checks when colliding with different object types, then stumbles or increases score accordingly
+     */
     void OnTriggerEnter(Collider collision)
     {
         if (collision.gameObject.tag == "Slide")
@@ -414,6 +440,9 @@ public class Run : MonoBehaviour {
         if(save)WriteFile();
     }
 
+    /**
+     *  @brief Writes the action data to a file
+     */
     void WriteFile()
     {
         bool c = true;

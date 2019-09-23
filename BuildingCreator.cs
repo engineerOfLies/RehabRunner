@@ -166,6 +166,12 @@ public class BuildingCreator : MonoBehaviour
 
     }
 
+    /**
+    *   @brief Function that reads in the list of frame types from a file
+    *   
+    *   @param path of file to be read in
+    *   @return FrameTypes object with a list of all the types of frames tha can be used
+    */
     public FrameTypes ReadFrameData(string jsonFile)
     {
         string json = File.ReadAllText(jsonFile);
@@ -176,7 +182,11 @@ public class BuildingCreator : MonoBehaviour
         return frames;
     }
 
-    //Function to generate the level
+    /**
+    *   @brief Function to generate the level, creates 20 frames
+    *  
+    *   @param FrameTypes object read in from ReadFrameData, containing list of frames
+    */
     public void CreateBuilding(FrameTypes listOfFrames)
     {
         //Uses the premade list of frames to create a level
@@ -227,7 +237,12 @@ public class BuildingCreator : MonoBehaviour
         //Copy --------------
     }
 
-    //Function to create a set number of frames (n)
+    /**
+    *   @brief Function to generate the level, creates n frames
+    *  
+    *   @param FrameTypes object read in from ReadFrameData, containing list of frames
+    *   @param number of frames to generate
+    */
     public void CreateBuilding(FrameTypes listOfFrames, int n)
     {
         //Uses the premade list of frames to create a level
@@ -276,6 +291,13 @@ public class BuildingCreator : MonoBehaviour
 
     }
 
+    /**
+    *   @brief Creates the frame gameObject in unity
+    *
+    *   @param  Frame object from the list of frame types in FrameTypes object
+    *   @param  the parent building this frame will be attatched to
+    *   @return the frame gameObject to be placed in the world
+    */
     public GameObject CreateFrame(Frame f, GameObject parent) //Actually build the frame using prefabs and other assets
     {
         f.lastUsed = Time.timeSinceLevelLoad;
@@ -387,7 +409,9 @@ public class BuildingCreator : MonoBehaviour
         //StopCoroutine(CoBuild);
     }
 
-    //Calculates weight for all frames in the frameType object
+    /**
+    *   @brief Calculates weight for all frames in the frameType object
+    */
     public void CalculateWeight()
     {
 
@@ -425,6 +449,11 @@ public class BuildingCreator : MonoBehaviour
 
     }
 
+    /**
+    *   @brief Finds the frame with the highest weight in the list of frames (FrameTypes object) 
+    *   
+    *   @return the frame with the heighest weight
+    */
     public Frame HighestWeightFrame()
     {
         Frame highest;
@@ -482,6 +511,13 @@ public class BuildingCreator : MonoBehaviour
         return highest;
     }
 
+    /**
+    *   @brief Places collectibles on existing frame
+    *   
+    *   @param  the gameObject of the frame, generated from CreateFrame
+    *   @param  the frame that collectibles are being generated for
+    *   @return frame gameObject with collectibles placed on it
+    */
     public GameObject PlaceCollectibles(GameObject g, Frame f)
     {
         //Create if statements for all numbers (1-6) and spawn in collectibles based on the number at the index
@@ -523,6 +559,13 @@ public class BuildingCreator : MonoBehaviour
         return g;
     }
 
+    /**
+    *   @brief Places obstacles on existing frame
+    *   
+    *   @param  the gameObject of the frame, generated from CreateFrame
+    *   @param  the frame that obstacles are being generated for
+    *   @return frame gameObject with obstacles placed on it
+    */
     public GameObject SpawnObstacles(GameObject g, Frame f)
     {
         bool b = false;
@@ -593,6 +636,13 @@ public class BuildingCreator : MonoBehaviour
         return g;
     }
 
+    /**
+    *   @brief Simple function to decide where to spawn objects
+    * 
+    *   @param lane number item is being placed in (0, 1, or 2)
+    *   @param gameObject being placed on, used for transform locations for the children objects being placed
+    *   @return location in world space of object being placed
+    */
     Vector3 Spot(int i, GameObject g) //Simple function to decide where to spawn objects
     {
         Vector3 vec = Vector3.zero;
@@ -607,6 +657,12 @@ public class BuildingCreator : MonoBehaviour
         return vec;
     }
 
+    /**
+    *   @brief Function to spawn plank(s) on gap frames
+    * 
+    *   @param object that the planks will be attatched to
+    *   @param lane where plank is being spawned (0, 1, or 2)
+    */
     void SpawnPlank(GameObject frame, int n)
     {
         //GameObject plank = new GameObject();
@@ -632,11 +688,19 @@ public class BuildingCreator : MonoBehaviour
         }
     }
 
+    /**
+    *   @brief Spawns clouds 
+    */
     public void SpawnClouds()
     {
         Instantiate(buildingPrefabs[6], new Vector3(72f, 14f, (float)cloudOffset), Quaternion.identity);
     }
 
+    /**
+    *   @brief Unity Function - Checks when this object collides with another object
+    * 
+    *   @param collision info of object that collided (including object that collided)
+    */
     void OnTriggerEnter(Collider col)
     {
         if (col.tag == "SpawnTrigger" && (numBuildings < MAX_BUILDINGS))
@@ -659,6 +723,9 @@ public class BuildingCreator : MonoBehaviour
         }
     }
 
+    /**
+    *   @brief Writes the world data file of the game just played
+    */
     void WriteFile()
     {
         string ext;              
@@ -699,6 +766,9 @@ public class BuildingCreator : MonoBehaviour
         
     }
 
+    /**
+    *   @brief Unity Function - Executes when game is closed
+    */
     void OnApplicationQuit()
     {
         if (save) WriteFile();
