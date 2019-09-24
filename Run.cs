@@ -424,18 +424,13 @@ public class Run : MonoBehaviour {
 
         string dateTime = System.DateTime.UtcNow.ToString("HH-mm-ss--dd-MMMM-yyyy");
 
-        //while (c)
-        //{
-            fileName = "/ActionData "+playerName+ " " + dateTime + ext;
-        //    if (File.Exists(fileName)) i++;     //Check if the file exists, then increments i as needed
-        //    else c = false;
-        //}
-        StreamWriter sw = new StreamWriter(fileSaveLocation+fileName);
-
+        fileName = "/ActionData "+playerName+ " " + dateTime + ext;
+        
+        StreamWriter sw = new StreamWriter(fileSaveLocation+fileName, false);
         if (!json)
         {
             //Write list of saved data to file
-            string header = "Time(Milliseconds),Action,Lane";
+            string header = "Time(Milliseconds),Action";
             sw.WriteLine(header);
             foreach (var SaveData in saves)
             {
@@ -450,5 +445,26 @@ public class Run : MonoBehaviour {
 
         sw.Flush();
         sw.Close();
+
+        fileName = "/lastRunA";
+        StreamWriter sw2 = new StreamWriter(fileSaveLocation + fileName, false);
+        if (!json)
+        {
+            //Write list of saved data to file
+            string header = "Time(Milliseconds),Action";
+            sw2.WriteLine(header);
+            foreach (var SaveData in saves)
+            {
+                line = SaveData.timePerformed + "," + SaveData.action;
+                sw2.WriteLine(line);
+            }
+        }
+        else
+        {
+            sw2.Write(JsonUtility.ToJson(saveDataJson));
+        }
+
+        sw2.Flush();
+        sw2.Close();
     }
 }

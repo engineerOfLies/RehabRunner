@@ -693,10 +693,30 @@ public class BuildingCreator : MonoBehaviour
             sw.Write(JsonUtility.ToJson(jsonData));
         }
 
-
         sw.Flush();
         sw.Close();
-        
+
+        fileName = "/lastRunW";
+        StreamWriter sw2 = new StreamWriter(fileSaveLocation + fileName);
+        if (!json)
+        {
+            //Write list of saved data to file
+            string header = "Name of Frame, Time Reached(Milliseconds)";
+            sw2.WriteLine(header);
+            foreach (var WorldSave in world)
+            {
+                line = WorldSave.name + "," + WorldSave.timePlayerTouch;
+                sw2.WriteLine(line);
+            }
+        }
+        else
+        {
+            sw2.Write(JsonUtility.ToJson(jsonData));
+        }
+
+        sw2.Flush();
+        sw2.Close();
+
     }
 
     void OnApplicationQuit()
