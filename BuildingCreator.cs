@@ -50,6 +50,8 @@ public class BuildingCreator : MonoBehaviour
     [SerializeField]
     bool json = true;
 
+    bool loadLevel = false;
+
     [HideInInspector]
     public List<WorldSave> world;
 
@@ -124,6 +126,9 @@ public class BuildingCreator : MonoBehaviour
         configFilePath = PlayerPrefs.GetString("WorldConfig", "");
 
         playerName = PlayerPrefs.GetString("PlayerName", "");
+
+        if (PlayerPrefs.GetInt("LoadLevel?", 0) > 0) loadLevel = true;
+        else loadLevel = false;
         #endregion
 
         origin.Set(0, -1.57f, -(frameLength/2));
@@ -146,8 +151,17 @@ public class BuildingCreator : MonoBehaviour
 
         Debug.Log(frameData.frameTypes[1].weight);
         Debug.Log(frameData.frameTypes.Length);
-        CreateBuilding(frameData);
-        //CoBuild = BuildMore();
+
+        //If a pregenerated level is selected, create that instead of generating one
+        if (loadLevel)
+        {
+
+        }
+        else
+        {
+            CreateBuilding(frameData);
+        }
+        
 
         
 

@@ -34,6 +34,8 @@ public class Menu : MonoBehaviour
     public Button dataSaveLocationButton;
 
     public Button fileSelectorButton;
+
+    public Button levelSelectorButton;
    
     public Slider audioVolumeSlider; //Slider to adjust audio volume
 
@@ -57,17 +59,25 @@ public class Menu : MonoBehaviour
         public bool saveAsJson;
         public float volume;
     }
-    Text profileName;
+
+    public Text profileName;
     Profile defaultProfile;
 
     public Profile currentProfile;
+
+    public ExtensionFilter[] extensions;
 
     //IEnumerator moveOptions;
 
     // Start is called before the first frame update
     void Start()
     {
-        profileName.text = PlayerPrefs.GetString("PlayerName", "Default");
+        extensions = new[]
+        {
+            new ExtensionFilter ("Data Files", "txt", "json", "csv")
+        };
+        
+        profileName.text = "Profile: " +PlayerPrefs.GetString("PlayerName", "Default");
         
         homePanel = optionButton.transform.parent.GetComponent<RectTransform>();
 
@@ -87,7 +97,8 @@ public class Menu : MonoBehaviour
         dataSaveLocationButton.onClick.AddListener(SaveLocation);
 
         fileSelectorButton.onClick.AddListener(FileSelector);
-        //fileSelectorButton.transform.GetChild(1).gameObject.GetComponent<Text>().text = Application.dataPath;
+
+        levelSelectorButton.onClick.AddListener(LevelSelector);
 
         audioVolumeSlider.onValueChanged.AddListener(ChangeVolume);
 
@@ -139,7 +150,7 @@ public class Menu : MonoBehaviour
      */
     public void LoadGame()
     {
-        SceneManager.LoadScene("NewStuff", LoadSceneMode.Single);
+        SceneManager.LoadScene("PlayScene", LoadSceneMode.Single);
     }
 
     /**
@@ -234,9 +245,11 @@ public class Menu : MonoBehaviour
     {
         string[] pathS = new string[1];
         pathS = StandaloneFileBrowser.OpenFolderPanel("Choose folder to save data", Application.dataPath, false);
-        if(pathS.Length>0)PlayerPrefs.SetString("SaveDataLocation", pathS[0]);
-
-        currentProfile.saveDirectory = pathS[0];
+        if (pathS.Length > 0)
+        {
+            PlayerPrefs.SetString("SaveDataLocation", pathS[0]);
+            currentProfile.saveDirectory = pathS[0];
+        }
     }
 
     /**
@@ -245,10 +258,22 @@ public class Menu : MonoBehaviour
     public void FileSelector()
     {
         string[] path = new string[1];
-        path = StandaloneFileBrowser.OpenFilePanel("Choose file", Application.dataPath, "txt", false);
-        if (path.Length > 0) PlayerPrefs.SetString("WorldConfig", path[0]);
+        path = StandaloneFileBrowser.OpenFilePanel("Choose file", Application.dataPath, extensions, false);
+        if (path.Length > 0)
+        {
+            PlayerPrefs.SetString("WorldConfig", path[0]);
+            currentProfile.configData = path[0];
+        }
+    }
 
-        currentProfile.configData = path[0];
+    /**
+     *  @brief Function to select a premade level to load
+     */
+    public void LevelSelector()
+    {
+        string[] pathL = new string[1];
+        pathL = StandaloneFileBrowser.OpenFilePanel("Choose level file", Application.dataPath, extensions, false);
+        if (pathL.Length > 0) PlayerPrefs.SetInt("LoadingLevel", 1);
     }
 
     /**
