@@ -273,7 +273,7 @@ public class Menu : MonoBehaviour
     {
         string[] pathL = new string[1];
         pathL = StandaloneFileBrowser.OpenFilePanel("Choose level file", Application.dataPath, extensions, false);
-        if (pathL.Length > 0) PlayerPrefs.SetInt("LoadingLevel", 1);
+        if (pathL.Length > 0) PlayerPrefs.SetString("LoadingLevel", pathL[0]);
     }
 
     /**
