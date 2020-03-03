@@ -1,0 +1,226 @@
+fileFormatVersion: 2
+guid: 39996928212b145889f98e1eaa223a6d
+timeCreated: 1513264962
+licenseType: Store
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: badge_cop_female_hot
+    100002: //RootNode
+    100004: female_calf_left_cop_hot
+    100006: female_calf_right_cop_hot
+    100008: female_foot_left_cop_hot
+    100010: female_foot_right_cop_hot
+    100012: female_hand_left_cop_hot
+    100014: female_hand_right_cop_hot
+    100016: female_hat_cop
+    100018: female_head_cop_hot
+    100020: female_hip_cop_hot
+    100022: female_lower_arm_left_cop_hot
+    100024: female_lower_arm_right_cop_hot
+    100026: female_thigh_left_cop_hot
+    100028: female_thigh_right_cop_hot
+    100030: female_torso_cop_hot
+    100032: female_upper_arm_left_cop_hot
+    100034: female_upper_arm_right_cop_hot
+    100036: head1_head
+    100038: head1_neck
+    100040: holster_w_gun
+    100042: leftArm1_LoResClavical
+    100044: leftArm1_LoResHand
+    100046: leftArm1_LoResLowerArm
+    100048: leftArm1_LoResUpperArm
+    100050: leftLeg1_LoResFoot
+    100052: leftLeg1_LoResLowerLeg
+    100054: leftLeg1_LoResToe
+    100056: leftLeg1_LoResUpperLeg
+    100058: rightArm1_LoResClavical
+    100060: rightArm1_LoResHand
+    100062: rightArm1_LoResLowerArm
+    100064: rightArm1_LoResUpperArm
+    100066: rightLeg1_LoResFoot
+    100068: rightLeg1_LoResLowerLeg
+    100070: rightLeg1_LoResToe
+    100072: rightLeg1_LoResUpperLeg
+    100074: spine1_loResSpine1
+    100076: spine1_loResSpine2
+    100078: spine1_loResSpine3
+    100080: TSMGWorldJoint
+    400000: badge_cop_female_hot
+    400002: //RootNode
+    400004: female_calf_left_cop_hot
+    400006: female_calf_right_cop_hot
+    400008: female_foot_left_cop_hot
+    400010: female_foot_right_cop_hot
+    400012: female_hand_left_cop_hot
+    400014: female_hand_right_cop_hot
+    400016: female_hat_cop
+    400018: female_head_cop_hot
+    400020: female_hip_cop_hot
+    400022: female_lower_arm_left_cop_hot
+    400024: female_lower_arm_right_cop_hot
+    400026: female_thigh_left_cop_hot
+    400028: female_thigh_right_cop_hot
+    400030: female_torso_cop_hot
+    400032: female_upper_arm_left_cop_hot
+    400034: female_upper_arm_right_cop_hot
+    400036: head1_head
+    400038: head1_neck
+    400040: holster_w_gun
+    400042: leftArm1_LoResClavical
+    400044: leftArm1_LoResHand
+    400046: leftArm1_LoResLowerArm
+    400048: leftArm1_LoResUpperArm
+    400050: leftLeg1_LoResFoot
+    400052: leftLeg1_LoResLowerLeg
+    400054: leftLeg1_LoResToe
+    400056: leftLeg1_LoResUpperLeg
+    400058: rightArm1_LoResClavical
+    400060: rightArm1_LoResHand
+    400062: rightArm1_LoResLowerArm
+    400064: rightArm1_LoResUpperArm
+    400066: rightLeg1_LoResFoot
+    400068: rightLeg1_LoResLowerLeg
+    400070: rightLeg1_LoResToe
+    400072: rightLeg1_LoResUpperLeg
+    400074: spine1_loResSpine1
+    400076: spine1_loResSpine2
+    400078: spine1_loResSpine3
+    400080: TSMGWorldJoint
+    2300000: badge_cop_female_hot
+    2300002: female_calf_left_cop_hot
+    2300004: female_calf_right_cop_hot
+    2300006: female_foot_left_cop_hot
+    2300008: female_foot_right_cop_hot
+    2300010: female_hand_left_cop_hot
+    2300012: female_hand_right_cop_hot
+    2300014: female_hat_cop
+    2300016: female_head_cop_hot
+    2300018: female_hip_cop_hot
+    2300020: female_lower_arm_left_cop_hot
+    2300022: female_lower_arm_right_cop_hot
+    2300024: female_thigh_left_cop_hot
+    2300026: female_thigh_right_cop_hot
+    2300028: female_upper_arm_left_cop_hot
+    2300030: female_upper_arm_right_cop_hot
+    2300032: holster_w_gun
+    3300000: badge_cop_female_hot
+    3300002: female_calf_left_cop_hot
+    3300004: female_calf_right_cop_hot
+    3300006: female_foot_left_cop_hot
+    3300008: female_foot_right_cop_hot
+    3300010: female_hand_left_cop_hot
+    3300012: female_hand_right_cop_hot
+    3300014: female_hat_cop
+    3300016: female_head_cop_hot
+    3300018: female_hip_cop_hot
+    3300020: female_lower_arm_left_cop_hot
+    3300022: female_lower_arm_right_cop_hot
+    3300024: female_thigh_left_cop_hot
+    3300026: female_thigh_right_cop_hot
+    3300028: female_upper_arm_left_cop_hot
+    3300030: female_upper_arm_right_cop_hot
+    3300032: holster_w_gun
+    4300000: female_torso_cop_hot
+    4300002: female_head_cop_hot
+    4300004: female_hat_cop
+    4300006: female_hand_left_cop_hot
+    4300008: female_lower_arm_left_cop_hot
+    4300010: female_upper_arm_left_cop_hot
+    4300012: female_hand_right_cop_hot
+    4300014: female_lower_arm_right_cop_hot
+    4300016: female_upper_arm_right_cop_hot
+    4300018: badge_cop_female_hot
+    4300020: female_foot_left_cop_hot
+    4300022: female_calf_left_cop_hot
+    4300024: female_thigh_left_cop_hot
+    4300026: female_foot_right_cop_hot
+    4300028: female_calf_right_cop_hot
+    4300030: female_thigh_right_cop_hot
+    4300032: holster_w_gun
+    4300034: female_hip_cop_hot
+    9500000: //RootNode
+    13700000: female_torso_cop_hot
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cop_hot_mat
+    second: {fileID: 2100000, guid: cbd54185680794a50b2a6a82b8d1717d, type: 2}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
