@@ -9,6 +9,8 @@ using UnityEngine;
 public class Run : MonoBehaviour {
 
     private const float QUICK_FALL = 18f;
+
+    BuildingCreator creator;
     
     public GameObject player;
     public Rigidbody pBody;
@@ -51,7 +53,7 @@ public class Run : MonoBehaviour {
     [System.Serializable]
     public struct SaveDataJson
     {
-        public List<SaveData> savess;
+        public List<SaveData> saveStruct;
     }
     [HideInInspector]
     public SaveDataJson saveDataJson;
@@ -60,6 +62,8 @@ public class Run : MonoBehaviour {
     bool save = true; //Set to true to save data
     [SerializeField]
     bool json = true;
+    [SerializeField]
+    bool scaffolding = false;
 
     public Text coinText, copDist;
     public Slider distanceTracker;
@@ -82,6 +86,9 @@ public class Run : MonoBehaviour {
         if (PlayerPrefs.GetInt("SaveAsJson?", 1) > 0) json = true;
         else json = false;
 
+        if (PlayerPrefs.GetInt("Scaffolding?", 0) > 0) scaffolding = true;
+        else scaffolding = false;
+
         if (PlayerPrefs.GetInt("EndlessMode?", 0) > 0) ; //Do something with endless mode
         else;
 
@@ -90,7 +97,9 @@ public class Run : MonoBehaviour {
         playerName = PlayerPrefs.GetString("PlayerName", "");
         #endregion
 
-        bab = this.gameObject.transform.GetChild(0).gameObject;
+        creator = FindObjectOfType<BuildingCreator>();
+
+        bab = this.gameObject.transform.GetChild(2).gameObject;
 
         xVec.Set(strafeDistance, 0, 0);
         zVec = Vector3.zero;
@@ -227,7 +236,7 @@ public class Run : MonoBehaviour {
             }
             else
             {
-                saveDataJson.savess.Add(new SaveData() { timePerformed = Time.timeSinceLevelLoad * 1000f, action = s });
+                saveDataJson.saveStruct.Add(new SaveData() { timePerformed = Time.timeSinceLevelLoad * 1000f, action = s });
             }
         }
     }
@@ -274,7 +283,7 @@ public class Run : MonoBehaviour {
             jumping = true;
             jumpTimer = jumpTimerSet; //tie to animation time
 
-            anim.Play("Jump", 0, 0f);
+            anim.Play("copJump", 0, 0f);
 
             SaveAction("Jump");
         }
@@ -291,7 +300,8 @@ public class Run : MonoBehaviour {
             sliding = true;
             slideTimer = slideTimerSet;
 
-            anim.Play("Slide", 0, 0f);
+            //anim.Play("Slide", 0, 0f);
+            anim.Play("copSlide", 0, 0f);
 
             SaveAction("Slide"); //Slide or duck, whatever
         }
@@ -309,7 +319,7 @@ public class Run : MonoBehaviour {
     public void Stumble()
     {
         stumbleTimer = stumbleTimerSet;
-        rend.material.color = Color.red;
+        //rend.material.color = Color.red;
         //call stumble animation also
         //slow speed after?
         anim.Play("Stumble", 0, 0f);
@@ -356,6 +366,8 @@ public class Run : MonoBehaviour {
             Stumble();
             //the player hit a wall
             //stop until they move back over
+
+            creator.AdjustScaffolding("Wall", jumping, sliding, leftLane, rightLane);
         }
         else;
     }
@@ -369,17 +381,27 @@ public class Run : MonoBehaviour {
     {
         if (collision.gameObject.tag == "Slide")
         {
+            creator.AdjustScaffolding(collision.gameObject.tag, jumping, sliding, leftLane, rightLane);
+
             if (!sliding)
             {
+                //the player hit an obstacle they had to slide under
+                //fall down under it and get up on the other side, slower?
                 PlayStumbleAnim(); // Maybe make a different animation for this?
                 Stumble();
+
+                
             }
-            else; //good job
-            //the player hit an obstacle they had to slide under
-            //fall down under it and get up on the other side, slower
+            else
+            {
+                //good job
+                
+            } 
+            
         }
         else if (collision.gameObject.tag == "HalfWall")
         {
+            creator.AdjustScaffolding(collision.gameObject.tag, jumping, sliding, leftLane, rightLane);
 
             if (!jumping)
             {
@@ -392,6 +414,8 @@ public class Run : MonoBehaviour {
         }
         else if (collision.gameObject.tag == "Hurdle")
         {
+            creator.AdjustScaffolding(collision.gameObject.tag, jumping, sliding, leftLane, rightLane);
+
             if (!sliding && !jumping)
             {
                 PlayStumbleAnim(); //the player stumbles if they aren't sliding or jumping\
@@ -401,6 +425,8 @@ public class Run : MonoBehaviour {
         }
         else if (collision.gameObject.tag == "Gap")
         {
+            creator.AdjustScaffolding(collision.gameObject.tag, jumping, sliding, leftLane, rightLane);
+
             if (!jumping)
             {
                 PlayStumbleAnim(); //fall into gap and stumble a bit, dont slow
@@ -410,7 +436,7 @@ public class Run : MonoBehaviour {
             else;
 
         }
-        else if (collision.gameObject.tag == "GoldBar")
+        else if (collision.gameObject.tag == "GoldBar" && !jumping)
         {
             //get points, add score, good jorb? GO FASTER??
             score += pointsPerBar;

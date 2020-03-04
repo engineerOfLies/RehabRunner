@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class BuildingCreator : MonoBehaviour
 {
+    Run runScript;
 
     public float laneWidth, frameLength;
 
@@ -31,6 +32,7 @@ public class BuildingCreator : MonoBehaviour
         public float weight;
         public float lastUsed;
     }
+    int activeListLength; //effective length of the list of frames (changes when scaffolding)
 
     [System.Serializable]
     public struct FrameTypes
@@ -49,6 +51,8 @@ public class BuildingCreator : MonoBehaviour
     bool save = true;
     [SerializeField]
     bool json = true;
+    
+    bool scaffolding = false;   
 
     bool loadLevel = false;
 
@@ -77,6 +81,7 @@ public class BuildingCreator : MonoBehaviour
     bool startFrame = true;
 
     int spawnTrigger = 0; //Every frame created, increment by 1. At 10, spawn trigger to spawn more frames
+    int framesUntilTrigger = 5;
 
     [Header("Tweak to perfection")]
     [SerializeField]
@@ -121,6 +126,9 @@ public class BuildingCreator : MonoBehaviour
         if (PlayerPrefs.GetInt("SaveAsJson?", 1) > 0) json = true;
         else json = false;
 
+        if (PlayerPrefs.GetInt("Scaffolding?", 0) > 0) scaffolding = true;
+        else scaffolding = false;
+
         fileSaveLocation = PlayerPrefs.GetString("SaveDataLocation", "");
 
         configFilePath = PlayerPrefs.GetString("WorldConfig", "");
@@ -140,29 +148,39 @@ public class BuildingCreator : MonoBehaviour
         lastFramePos = origin;
         //FrameTypes frameData;
 
-        if (configFilePath != "")
+        runScript = FindObjectOfType<Run>();
+
+        if (scaffolding)
         {
-            frameData = ReadFrameData(configFilePath);
+            frameData = ReadFrameData(Application.dataPath + "/scaffolding.txt");
+            activeListLength = 6;
         }
         else
         {
-            frameData = ReadFrameData(Application.dataPath + "/data.txt");
+            if (configFilePath != "")
+            {
+                frameData = ReadFrameData(configFilePath);
+            }
+            else
+            {
+                frameData = ReadFrameData(Application.dataPath + "/data.txt");
+            }
+
+            Debug.Log(frameData.frameTypes[1].weight);
+            Debug.Log(frameData.frameTypes.Length);
+
+            activeListLength = frameData.frameTypes.Length;
+
+            if (loadLevel)//If a pregenerated level is selected, create that instead of generating one
+            {
+
+            }
+            else
+            {
+                CreateBuilding(frameData);
+            }
+
         }
-
-        Debug.Log(frameData.frameTypes[1].weight);
-        Debug.Log(frameData.frameTypes.Length);
-
-        //If a pregenerated level is selected, create that instead of generating one
-        if (loadLevel)
-        {
-
-        }
-        else
-        {
-            CreateBuilding(frameData);
-        }
-        
-
         
 
         //Create empty frames to start off
@@ -396,7 +414,7 @@ public class BuildingCreator : MonoBehaviour
             framePiece = PlaceCollectibles(framePiece, f);
         }
 
-        if(spawnTrigger >= 5 ) //Once 10 frames are created, create a trigger to spawn another set when the player passes through
+        if(spawnTrigger >= framesUntilTrigger ) //Once $framesUntilTrigger frames are created, create a trigger to spawn another set when the player passes through
         {
             Instantiate(buildingPrefabs[3], framePiece.transform.position, Quaternion.identity, framePiece.transform);
             framePiece.name += " /w Spawn Trigger";
@@ -428,10 +446,9 @@ public class BuildingCreator : MonoBehaviour
     */
     public void CalculateWeight()
     {
-
         //int num = 0;
         float freq, diff;       
-        for(int num = 0; num < frameData.frameTypes.Length; num++)
+        for(int num = 0; num < activeListLength; num++)
         {
             now = Time.timeSinceLevelLoad * 1000; //In milliseconds
             diff = now - frameData.frameTypes[num].lastUsed;
@@ -478,7 +495,7 @@ public class BuildingCreator : MonoBehaviour
 
         //Searches the list of frames to find the highest weight
         //Then Returns it
-        for (int i = 0; i < frameData.frameTypes.Length; i++)
+        for (int i = 0; i < activeListLength; i++)
         {
             if (frameData.frameTypes[i].weight < highest.weight) continue; //If the current frame'sweight is lower than the highest, skip
 
@@ -506,7 +523,7 @@ public class BuildingCreator : MonoBehaviour
         Debug.Log(frameData.frameTypes[s].name + " is the highest weight at " + frameData.frameTypes[s].weight);
         if (frameData.frameTypes[s].name == "gap")
         {
-            for (int k = 0; k < frameData.frameTypes.Length; k++)
+            for (int k = 0; k < activeListLength; k++)
             {
                 if (frameData.frameTypes[k].name == "gap")
                 {
@@ -621,7 +638,7 @@ public class BuildingCreator : MonoBehaviour
                     break;
                 case 3: //wall
 
-                    Instantiate(obstaclePrefabs[1], Spot(i, g), Quaternion.identity, g.transform);
+                    Instantiate(obstaclePrefabs[1], (Spot(i, g)+ new Vector3(0f, 2f, 0f)), Quaternion.identity, g.transform);
                     break;
 
                 case 4: //Half Wall (Jump)
@@ -703,6 +720,20 @@ public class BuildingCreator : MonoBehaviour
     }
 
     /**
+     *  @brief Function used by Run.cs to adjust scaffolding variables 
+     * 
+     *  @param name of the type of frame being passed
+     *  @param whether or not the player is jumping at the time they pass the frame
+     *  @param whether or not the player is sliding
+     *  @param checks if player is in left lane
+     *  @param checks if player is in right lane
+     */
+    public void AdjustScaffolding(string frameType, bool jumping, bool sliding, bool inLeft, bool inRight)
+    {
+
+    }
+
+    /**
     *   @brief Spawns clouds 
     */
     public void SpawnClouds()
@@ -711,7 +742,7 @@ public class BuildingCreator : MonoBehaviour
     }
 
     /**
-    *   @brief Unity Function - Checks when this object collides with another object
+    *   @brief Unity Function - Checks when this object collides with a trigger
     * 
     *   @param collision info of object that collided (including object that collided)
     */

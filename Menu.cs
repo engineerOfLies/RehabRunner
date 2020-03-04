@@ -57,6 +57,7 @@ public class Menu : MonoBehaviour
         public string configData; //path
         public bool saveWorldPlayData;
         public bool saveAsJson;
+        public bool scaffolding;
         public float volume;
     }
 
@@ -120,6 +121,7 @@ public class Menu : MonoBehaviour
         defaultProfile.configData = Application.dataPath+"/data.txt";
         defaultProfile.saveWorldPlayData = true;
         defaultProfile.saveAsJson = false;
+        defaultProfile.scaffolding = false;
         defaultProfile.volume = .70f;
         #endregion
 
@@ -134,10 +136,10 @@ public class Menu : MonoBehaviour
         {
             float x = 0;
             x += Time.deltaTime;
-            homePanel.position = Vector3.MoveTowards(homePanel.position, t1, (Mathf.Abs(homePanel.position.x - t1.x)/8));
-            optionPanel.position = Vector3.MoveTowards(optionPanel.position, t2, (Mathf.Abs(optionPanel.position.x - t2.x) / 8));
+            homePanel.position = Vector3.MoveTowards(homePanel.position, t1, (Mathf.Abs(homePanel.position.x - t1.x)/12));
+            optionPanel.position = Vector3.MoveTowards(optionPanel.position, t2, (Mathf.Abs(optionPanel.position.x - t2.x) /12));
 
-            if (x > 2)
+            if (x > 3)
             {
                 move = false;
                 x = 0f;
@@ -161,22 +163,22 @@ public class Menu : MonoBehaviour
         //  -(x - 1) ^ 2 + 1
         if(b1)
         {
-            t1 += new Vector3(-1200f, 0f, 0f);
+            t1 += new Vector3(-1600f, 0f, 0f);
             b1 = false;
         }else
         {
-            t1 += new Vector3(1200f, 0f, 0f);
+            t1 += new Vector3(1600f, 0f, 0f);
             b1 = true;
         }
 
         if(b2)
         {
-            t2 += new Vector3(-1200f, 0f, 0f);
+            t2 += new Vector3(-1600f, 0f, 0f);
             b2 = false;
         }
         else
         {
-            t2 += new Vector3(1200f, 0f, 0f);
+            t2 += new Vector3(1600f, 0f, 0f);
             b2 = true;
         }              
         move = true;

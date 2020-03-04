@@ -23,7 +23,7 @@
             "priority":1,
             "repeat":0
         },
-	{
+		{
             "name":"gap",
             "obstacles":[0,1,0],
             "collectables":[0,0,0,0,0,0],
@@ -34,7 +34,7 @@
             "priority":1,
             "repeat":0
         },
-	{
+		{
             "name":"gap",
             "obstacles":[1,0,1],
             "collectables":[0,0,0,0,0,0],
@@ -56,7 +56,7 @@
             "priority":0.2,
             "repeat":0
         },
-	{
+		{
             "name":"power lines",
             "obstacles":[2,2,0],
             "collectables":[0,0,0,0,0,0],
@@ -67,7 +67,7 @@
             "priority":0.2,
             "repeat":0
         },
-	{
+		{
             "name":"mid right hurdle",
             "obstacles":[0,6,6],
             "collectables":[0,0,0,0,0,0],
@@ -78,7 +78,7 @@
             "priority":0.1,
             "repeat":0
         },
-	{
+		{
             "name":"mid wall",
             "obstacles":[0,3,0],
             "collectables":[0,0,0,0,0,0],
@@ -100,7 +100,7 @@
             "priority":0.4,
             "repeat":3
         },
-	{
+		{
             "name":"right half wall",
             "obstacles":[0,0,4],
             "collectables":[0,0,0,0,0,0],
@@ -177,5 +177,5 @@
             "priority":0.5,
             "repeat":2
         }
-]
+	]
 }
